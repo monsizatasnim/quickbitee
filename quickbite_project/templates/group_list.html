@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Groups</title>
+    <style>
+        body { background: #0d1b2a; color: white; font-family: Arial; padding: 40px; }
+        .group-box { background: #1b263b; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        .btn { display: inline-block; background: #0077b6; color: white; padding: 10px 20px;
+               border-radius: 8px; text-decoration: none; margin-top: 10px; }
+        h1 { color: #00b4d8; }
+    </style>
+</head>
+<body>
+
+<h1>👥 My Groups</h1>
+
+<a class="btn" href="{% url 'create_group' %}">+ Create New Group</a>
+
+<br><br>
+
+{% for group in groups %}
+<div class="group-box">
+    <h3>{{ group.name }}</h3>
+    <p>Created by: {{ group.created_by.username }}</p>
+    <p>Members: {{ group.get_total_members }}</p>
+
+    <a class="btn" href="{% url 'group_detail' group.id %}">Enter Group</a>
+
+    {% if user != group.created_by and user not in group.members.all %}
+        <a class="btn" href="{% url 'join_group' group.id %}" style="background:#2a9d8f;">
+            Join Group
+        </a>
+    {% endif %}
+</div>
+{% empty %}
+<p>No groups available.</p>
+{% endfor %}
+
+<br>
+<a class="btn" href="{% url 'home' %}" style="background:#415a77;">← Back to Menu</a>
+
+</body>
+</html>

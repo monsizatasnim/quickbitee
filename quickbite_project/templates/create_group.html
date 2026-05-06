@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Group</title>
+    <style>
+        body { background: #0d1b2a; color: white; font-family: Arial; padding: 40px; }
+        .box { background: #1b263b; padding: 30px; border-radius: 10px; max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { background: #00b4d8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        h1 { color: #00b4d8; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>Create Group Order</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Group name (e.g., Friday Lunch)" required>
+        <button type="submit">Create Group</button>
+    </form>
+    <br>
+    <a href="{% url 'group_list' %}" style="color:#aaa;">Cancel</a>
+</div>
+
+</body>
+</html>

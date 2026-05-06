@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <style>
+        body { background:#0d1b2a; color:white; font-family:Arial; padding:40px; }
+        .box { background:#1b263b; padding:30px; border-radius:12px; max-width:400px; margin:auto; }
+        button { background:#00b4d8; color:white; padding:10px 20px; border:none; border-radius:6px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>📝 Register</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Account</button>
+    </form>
+</div>
+
+</body>
+</html>

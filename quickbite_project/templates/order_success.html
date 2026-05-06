@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Placed - QuickBite</title>
+    <style>
+        body {
+            background-color: #0d1b2a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        .success-box {
+            background: #1b263b;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            color: #00b4d8;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        td, th {
+            padding: 10px;
+            border-bottom: 1px solid #415a77;
+        }
+        .btn {
+            display: inline-block;
+            background: #00b4d8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-box">
+    <h1>✅ Order Placed Successfully!</h1>
+    <p><strong>Order ID:</strong> #{{ order.id }}</p>
+    <p><strong>Status:</strong> {{ order.status }}</p>
+    <p><strong>Total:</strong> {{ order.total_price }} Tk</p>
+
+    <h3>Your Items:</h3>
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.menu_item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price }} Tk</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'home' %}" class="btn">← Back to Menu</a>
+    <br>
+<a href="{% url 'my_orders' %}" class="btn">📦 View My Orders</a>
+</div>
+
+</body>
+</html>

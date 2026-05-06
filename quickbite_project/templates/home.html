@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QuickBite Menu</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #1a1a2e;
+            color: white;
+            padding: 30px;
+        }
+        h1 {
+            color: #00b4d8;
+        }
+        .item {
+            background: #16213e;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+        .btn {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        .add {
+            background: #0077b6;
+        }
+        .cart-btn {
+            background: #2a9d8f;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🍔 QuickBite Menu</h1>
+
+<a class="btn cart-btn" href="{% url 'view_cart' %}">🛒 View Cart</a>
+
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn" style="background:#e63946;">
+            🚪 Logout
+        </button>
+    </form>
+{% else %}
+    <a class="btn" href="{% url 'login' %}" style="background:#00b4d8;">
+        🔐 Login
+    </a>
+{% endif %}
+
+<a class="btn" href="{% url 'group_list' %}" style="background:#6c5ce7;">
+    👥 Group Ordering
+</a>
+
+
+<br><br>
+
+{% for item in items %}
+<div class="item">
+    <h3>{{ item.name }}</h3>
+    <p>💰 Price: ৳{{ item.price }}</p>
+    <p>📝 {{ item.description }}</p>
+    <a class="btn add" href="/menu/add/{{ item.id }}/">➕ Add to Cart</a>
+    {% if user_allergies %}
+    {% for allergy in user_allergies %}
+        {% if allergy in item.ingredients|lower %}
+            <p style="color:red;">⚠ Contains your allergy: {{ allergy }}</p>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+</div>
+{% endfor %}
+
+</body>
+</html>

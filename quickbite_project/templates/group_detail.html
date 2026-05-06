@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Group Detail</title>
+    <style>
+        body { background: #0d1b2a; color: white; font-family: Arial; padding: 40px; }
+        .box { background: #1b263b; padding: 30px; border-radius: 12px; }
+        h1 { color: #00b4d8; }
+        .item-box { background:#16213e; padding:10px; margin:10px 0; border-radius:8px;}
+        .btn { background: #0077b6; color: white; padding: 6px 12px;
+               border-radius: 6px; text-decoration: none; display:inline-block; margin-top:5px;}
+        button { background:#2a9d8f; color:white; border:none; padding:5px 10px; border-radius:5px;}
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>👥 {{ group.name }}</h1>
+{% if request.user not in group.members.all %}
+    <a class="btn" href="{% url 'join_group' group.id %}">
+        ➕ Join Group
+    </a>
+{% endif %}
+    <h3>Add Items:</h3>
+    {% for item in items %}
+        <div class="item-box">
+            {{ item.name }} - {{ item.price }} Tk
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" value="{{ item.id }}">
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h3>Group Cart:</h3>
+
+    {% for entry in group_items %}
+        <div class="item-box">
+            {{ entry.user.username }} ordered
+            {{ entry.menu_item.name }} x {{ entry.quantity }}
+            → {{ entry.get_subtotal }} Tk
+        </div>
+    {% empty %}
+        <p>No items yet.</p>
+    {% endfor %}
+<h3>💰 Bill Summary:</h3>
+
+{% for username, total in user_totals.items %}
+    <div class="item-box">
+        {{ username }} pays → {{ total }} Tk
+    </div>
+{% endfor %}
+{% if user == group.created_by and group.is_active %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="finalize_group"
+                style="background:#e63946; padding:10px 20px; border:none; border-radius:8px; color:white;">
+            ✅ Finalize Group Order
+        </button>
+    </form>
+{% endif %}
+<h3>Total Group Bill: {{ total_group_bill }} Tk</h3>
+    <br>
+    <a class="btn" href="{% url 'group_list' %}">← Back</a>
+</div>
+
+</body>
+</html>

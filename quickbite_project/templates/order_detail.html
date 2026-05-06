@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Details</title>
+    <style>
+        body {
+            background-color: #0d1b2a;
+            color: white;
+            font-family: Arial;
+            padding: 40px;
+        }
+        .box {
+            background: #1b263b;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: auto;
+        }
+        h1 {
+            color: #00b4d8;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #415a77;
+        }
+        .btn {
+            display: inline-block;
+            background: #0077b6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>📦 Order #{{ order.id }}</h1>
+
+    <p><strong>Status:</strong>
+{% if order.status == "PENDING" %}
+    <span style="color:orange;">{{ order.status }}</span>
+{% elif order.status == "PREPARING" %}
+    <span style="color:deepskyblue;">{{ order.status }}</span>
+{% elif order.status == "DELIVERED" %}
+    <span style="color:lightgreen;">{{ order.status }}</span>
+{% endif %}
+</p>
+    {% if not order.is_paid %}
+    <a class="btn" style="background:#2a9d8f;"
+       href="{% url 'make_payment' order.id %}">
+       💳 Pay Now
+    </a>
+{% else %}
+    <p style="color:lightgreen;">✅ Payment Completed</p>
+{% endif %}
+    <p><strong>Total:</strong> {{ order.total_price }} Tk</p>
+    <p><strong>Date:</strong> {{ order.created_at }}</p>
+
+    <h3>Items:</h3>
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.menu_item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price }} Tk</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a class="btn" href="{% url 'my_orders' %}">← Back to My Orders</a>
+</div>
+
+</body>
+</html>

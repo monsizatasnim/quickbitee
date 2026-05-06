@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - QuickBite</title>
+    <style>
+        body {
+            background: #0d1b2a;
+            color: white;
+            font-family: Arial;
+            padding: 40px;
+        }
+        .box {
+            background: #1b263b;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: auto;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #00b4d8;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>🔐 Login</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account?
+<a href="{% url 'register' %}" style="color:#00b4d8;">Register</a>
+</p>
+</div>
+
+</body>
+</html>
