@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Add Menu Item{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 class="section-title">➕ Add Menu Item</h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Item Name *</label>
+                    <input type="text" name="name" class="form-control"
+                           placeholder="e.g. Chicken Burger" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control"
+                              rows="3"
+                              placeholder="Describe the item..."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Price (৳) *</label>
+                    <input type="number" name="price" class="form-control"
+                           placeholder="e.g. 150" step="0.01" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ingredients</label>
+                    <input type="text" name="ingredients" class="form-control"
+                           placeholder="e.g. chicken, bread, cheese, lettuce">
+                    <small class="text-muted">
+                        Separate with commas. Used for allergy detection.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Item Image</label>
+                    <input type="file" name="image" class="form-control"
+                           accept="image/*">
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    ✅ Add Item
+                </button>
+                <a href="{% url 'restaurants:owner_dashboard' %}"
+                   class="btn btn-primary w-100 mt-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

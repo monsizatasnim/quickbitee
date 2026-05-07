@@ -7,9 +7,9 @@ from .models import Restaurant, MenuItem
 from orders.models import Order
 
 
-# -------------------------------------------------------
+
 # PUBLIC VIEWS (anyone can see)
-# -------------------------------------------------------
+
 
 def restaurant_list(request):
     restaurants = Restaurant.objects.filter(is_active=True)
@@ -40,9 +40,9 @@ def restaurant_detail(request, pk):
     })
 
 
-# -------------------------------------------------------
+
 # OWNER DASHBOARD VIEWS (only restaurant owners)
-# -------------------------------------------------------
+
 
 def owner_required(view_func):
     """Custom decorator to check if user is a restaurant owner"""

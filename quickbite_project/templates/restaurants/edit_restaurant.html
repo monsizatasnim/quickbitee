@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Edit Restaurant Info{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card p-4">
+            <h3 class="section-title">🍽️ Edit Restaurant Info</h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Restaurant Name *</label>
+                    <input type="text" name="name" class="form-control"
+                           value="{{ restaurant.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description *</label>
+                    <textarea name="description" class="form-control"
+                              rows="3">{{ restaurant.description }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Address *</label>
+                    <input type="text" name="address" class="form-control"
+                           value="{{ restaurant.address }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone" class="form-control"
+                           value="{{ restaurant.phone|default:'' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Image</label><br>
+                    {% if restaurant.image %}
+                        <img src="{{ restaurant.image.url }}"
+                             style="width:150px; border-radius:8px;" class="mb-2">
+                    {% endif %}
+                    <input type="file" name="image"
+                           class="form-control mt-2" accept="image/*">
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    ✅ Save Changes
+                </button>
+                <a href="{% url 'restaurants:owner_dashboard' %}"
+                   class="btn btn-primary w-100 mt-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

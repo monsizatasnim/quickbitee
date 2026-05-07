@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ item.name }}{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 class="section-title">✏️ Edit — {{ item.name }}</h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Item Name *</label>
+                    <input type="text" name="name" class="form-control"
+                           value="{{ item.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control"
+                              rows="3">{{ item.description }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Price (৳) *</label>
+                    <input type="number" name="price" class="form-control"
+                           value="{{ item.price }}" step="0.01" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ingredients</label>
+                    <input type="text" name="ingredients" class="form-control"
+                           value="{{ item.ingredients|default:'' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Image</label><br>
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}"
+                             style="width:100px; border-radius:8px;" class="mb-2">
+                    {% else %}
+                        <p class="text-muted">No image</p>
+                    {% endif %}
+                    <input type="file" name="image"
+                           class="form-control mt-2" accept="image/*">
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_available"
+                           class="form-check-input" id="available"
+                           {% if item.is_available %}checked{% endif %}>
+                    <label class="form-check-label" for="available">
+                        Available for ordering
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    ✅ Save Changes
+                </button>
+                <a href="{% url 'restaurants:owner_dashboard' %}"
+                   class="btn btn-primary w-100 mt-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

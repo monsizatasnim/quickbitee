@@ -8,10 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),
-
-    path('', restaurant_views.restaurant_list, name='home'),
-
     path('restaurants/', include('restaurants.urls')),
+    path('', restaurant_views.restaurant_list, name='home'),
 ]
 
 if settings.DEBUG:
