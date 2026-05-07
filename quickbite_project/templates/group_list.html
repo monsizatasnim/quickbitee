@@ -1,43 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Groups</title>
-    <style>
-        body { background: #0d1b2a; color: white; font-family: Arial; padding: 40px; }
-        .group-box { background: #1b263b; padding: 20px; margin: 15px 0; border-radius: 10px; }
-        .btn { display: inline-block; background: #0077b6; color: white; padding: 10px 20px;
-               border-radius: 8px; text-decoration: none; margin-top: 10px; }
-        h1 { color: #00b4d8; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>👥 My Groups</h1>
+{% block title %}Group Orders - QuickBite{% endblock %}
 
-<a class="btn" href="{% url 'create_group' %}">+ Create New Group</a>
+{% block content %}
 
-<br><br>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="section-title mb-0">👥 Group Orders</h2>
+    <a href="{% url 'create_group' %}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Create Group
+    </a>
+</div>
 
 {% for group in groups %}
-<div class="group-box">
-    <h3>{{ group.name }}</h3>
-    <p>Created by: {{ group.created_by.username }}</p>
-    <p>Members: {{ group.get_total_members }}</p>
-
-    <a class="btn" href="{% url 'group_detail' group.id %}">Enter Group</a>
-
-    {% if user != group.created_by and user not in group.members.all %}
-        <a class="btn" href="{% url 'join_group' group.id %}" style="background:#2a9d8f;">
-            Join Group
-        </a>
-    {% endif %}
+<div class="card mb-3 p-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 style="color:#00b4d8;">{{ group.name }}</h5>
+            <p class="mb-1">Created by: {{ group.created_by.username }}</p>
+            <p class="mb-0">Members: {{ group.get_total_members }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'group_detail' group.id %}" class="btn btn-primary btn-sm">
+                Enter Group
+            </a>
+            {% if user not in group.members.all %}
+                <a href="{% url 'join_group' group.id %}" class="btn btn-success btn-sm">
+                    Join
+                </a>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% empty %}
-<p>No groups available.</p>
+<div class="text-center mt-5">
+    <h4>No groups yet. Create one!</h4>
+</div>
 {% endfor %}
 
-<br>
-<a class="btn" href="{% url 'home' %}" style="background:#415a77;">← Back to Menu</a>
-
-</body>
-</html>
+{% endblock %}

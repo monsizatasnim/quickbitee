@@ -1,44 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Your Cart - QuickBite</title>
-    <style>
-        body { font-family: Arial; background: #1a1a2e; color: white; padding: 30px; }
-        h1 { color: #00b4d8; }
-        .item { background: #16213e; padding: 15px; margin: 10px 0; border-radius: 10px; }
-        .btn { color: white; text-decoration: none; padding: 10px 20px;
-               border-radius: 8px; display: inline-block; margin-top: 15px; }
-        .checkout { background: #2a9d8f; }
-        .back { background: #0077b6; }
-        .remove-btn { background: #e63946; padding: 6px 12px; border-radius: 6px;
-                      color: white; text-decoration: none; display: inline-block; margin-top: 10px; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>🛒 Your Cart</h1>
+{% block title %}Your Cart - QuickBite{% endblock %}
+
+{% block content %}
+
+<h2 class="section-title">🛒 Your Cart</h2>
 
 {% if items %}
-    {% for entry in items %}
-    <div class="item">
-        <h3>{{ entry.item.name }}</h3>
-        <p>📦 Quantity: {{ entry.quantity }}</p>
-        <p>💵 Subtotal: ৳{{ entry.subtotal }}</p>
-        <a href="{% url 'remove_from_cart' entry.item.id %}" class="remove-btn">❌ Remove</a>
+<div class="row">
+    <div class="col-md-8">
+        {% for entry in items %}
+        <div class="card mb-3 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 style="color:#00b4d8;">{{ entry.item.name }}</h5>
+                    <p class="mb-1">📦 Quantity: {{ entry.quantity }}</p>
+                    <p class="mb-0">💵 Subtotal: ৳{{ entry.subtotal }}</p>
+                </div>
+                <a href="{% url 'remove_from_cart' entry.item.id %}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-trash"></i> Remove
+                </a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 
-    <h2>Total: ৳{{ total }}</h2>
-
-    <!-- THIS IS THE FIXED LINE - now actually goes to checkout -->
-    <a class="btn checkout" href="{% url 'create_order' %}">✅ Place Order</a>
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h4 style="color:#00b4d8;">Order Summary</h4>
+            <hr style="border-color:#415a77;">
+            <h5>Total: ৳{{ total }}</h5>
+            <a href="{% url 'create_order' %}" class="btn btn-success w-100 mt-3">
+                ✅ Place Order
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary w-100 mt-2">
+                ← Continue Shopping
+            </a>
+        </div>
+    </div>
+</div>
 
 {% else %}
-    <p>Your cart is empty 😢</p>
+<div class="text-center mt-5">
+    <h4>Your cart is empty 😢</h4>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">← Browse Menu</a>
+</div>
 {% endif %}
 
-<br>
-<a class="btn back" href="{% url 'home' %}">← Back to Menu</a>
-
-</body>
-</html>
+{% endblock %}

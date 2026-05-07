@@ -1,57 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Orders - QuickBite</title>
-    <style>
-        body {
-            background-color: #0d1b2a;
-            color: white;
-            font-family: Arial;
-            padding: 40px;
-        }
-        .order-box {
-            background: #1b263b;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 12px;
-        }
-        h1 {
-            color: #00b4d8;
-        }
-        .btn {
-            display: inline-block;
-            background: #0077b6;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>📦 My Orders</h1>
+{% block title %}My Orders - QuickBite{% endblock %}
+
+{% block content %}
+
+<h2 class="section-title">📦 My Orders</h2>
 
 {% if orders %}
     {% for order in orders %}
-    <div class="order-box">
-       <p>
-    <strong>Order ID:</strong>
-    <a href="{% url 'order_detail' order.id %}" style="color:#00b4d8;">
-        #{{ order.id }}
-    </a>
-</p>
-        <p><strong>Status:</strong> {{ order.status }}</p>
-        <p><strong>Total:</strong> {{ order.total_price }} Tk</p>
-        <p><strong>Date:</strong> {{ order.created_at }}</p>
+    <div class="card mb-3 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5>
+                    Order
+                    <a href="{% url 'order_detail' order.id %}" style="color:#00b4d8;">
+                        #{{ order.id }}
+                    </a>
+                </h5>
+                <p class="mb-1">
+                    Status:
+                    <span class="status-{{ order.status }}">{{ order.status }}</span>
+                </p>
+                <p class="mb-1">Total: ৳{{ order.total_price }}</p>
+                <p class="mb-0 text-muted" style="font-size:0.85rem;">{{ order.created_at }}</p>
+            </div>
+            <a href="{% url 'order_detail' order.id %}" class="btn btn-primary btn-sm">
+                View Details
+            </a>
+        </div>
     </div>
     {% endfor %}
+
 {% else %}
-    <p>You have no orders yet.</p>
+    <div class="text-center mt-5">
+        <h4>You have no orders yet.</h4>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-3">← Browse Menu</a>
+    </div>
 {% endif %}
 
-<a class="btn" href="{% url 'home' %}">← Back to Menu</a>
-
-</body>
-</html>
+{% endblock %}

@@ -1,80 +1,42 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>QuickBite Menu</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #1a1a2e;
-            color: white;
-            padding: 30px;
-        }
-        h1 {
-            color: #00b4d8;
-        }
-        .item {
-            background: #16213e;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-        }
-        .btn {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-top: 15px;
-        }
-        .add {
-            background: #0077b6;
-        }
-        .cart-btn {
-            background: #2a9d8f;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>🍔 QuickBite Menu</h1>
+{% block title %}Menu - QuickBite{% endblock %}
 
-<a class="btn cart-btn" href="{% url 'view_cart' %}">🛒 View Cart</a>
+{% block content %}
 
-{% if user.is_authenticated %}
-    <form method="post" action="{% url 'logout' %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn" style="background:#e63946;">
-            🚪 Logout
-        </button>
-    </form>
-{% else %}
-    <a class="btn" href="{% url 'login' %}" style="background:#00b4d8;">
-        🔐 Login
-    </a>
-{% endif %}
+<h2 class="section-title">🍔 Our Menu</h2>
 
-<a class="btn" href="{% url 'group_list' %}" style="background:#6c5ce7;">
-    👥 Group Ordering
-</a>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for item in items %}
+    <div class="col">
+        <div class="card h-100 p-3">
+            <div class="card-body">
+                <h5 class="card-title" style="color:#00b4d8;">{{ item.name }}</h5>
+                <p class="card-text">{{ item.description }}</p>
+                <p class="fw-bold">💰 ৳{{ item.price }}</p>
 
-
-<br><br>
-
-{% for item in items %}
-<div class="item">
-    <h3>{{ item.name }}</h3>
-    <p>💰 Price: ৳{{ item.price }}</p>
-    <p>📝 {{ item.description }}</p>
-    <a class="btn add" href="/menu/add/{{ item.id }}/">➕ Add to Cart</a>
-    {% if user_allergies %}
-    {% for allergy in user_allergies %}
-        {% if allergy in item.ingredients|lower %}
-            <p style="color:red;">⚠ Contains your allergy: {{ allergy }}</p>
-        {% endif %}
+                {% if user_allergies %}
+                    {% for allergy in user_allergies %}
+                        {% if allergy in item.ingredients|lower %}
+                            <p class="allergy-warning">
+                                ⚠️ Contains your allergen: {{ allergy }}
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="card-footer border-0 bg-transparent">
+                <a href="{% url 'add_to_cart' item.id %}" class="btn btn-primary w-100">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <p>No menu items yet. Check back soon!</p>
+    </div>
     {% endfor %}
-{% endif %}
 </div>
-{% endfor %}
 
-</body>
-</html>
+{% endblock %}
