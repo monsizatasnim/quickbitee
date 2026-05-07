@@ -4,30 +4,40 @@ from django.contrib import messages
 from restaurants.models import MenuItem, Restaurant
 from .models import Order, OrderItem
 
+def calculate_delivery_charge(address):
+    address_lower = address.lower()
 
+    far_keywords = ['uttara', 'gazipur', 'narayanganj',
+                    'savar', 'keraniganj', 'tongi']
 
-# cart view (show)
+    medium_keywords = ['mirpur', 'mohammadpur', 'demra',
+                       'badda', 'khilgaon', 'rampura']
 
+    for keyword in far_keywords:
+        if keyword in address_lower:
+            return 80
+
+    for keyword in medium_keywords:
+        if keyword in address_lower:
+            return 50
+
+    return 30
 
 def add_to_cart(request, item_id):
     item = get_object_or_404(MenuItem, id=item_id)
     cart = request.session.get('cart', {})
 
-    # Check if cart has items from a different restaurant
     cart_restaurant_id = request.session.get('cart_restaurant_id')
 
     if cart_restaurant_id and int(cart_restaurant_id) != item.restaurant.id:
-        # Clear cart because different restaurant
         cart = {}
         messages.warning(request, '⚠️ Your cart was cleared because you switched restaurants.')
 
-    # Add item or increase quantity
     if str(item_id) in cart:
         cart[str(item_id)]['quantity'] += 1
     else:
         cart[str(item_id)] = {'quantity': 1}
 
-    # Save to session
     request.session['cart'] = cart
     request.session['cart_restaurant_id'] = item.restaurant.id
 
@@ -75,7 +85,6 @@ def remove_from_cart(request, item_id):
     cart.pop(str(item_id), None)
     request.session['cart'] = cart
 
-    # If cart is now empty, clear restaurant too
     if not cart:
         request.session['cart_restaurant_id'] = None
 
@@ -84,45 +93,46 @@ def remove_from_cart(request, item_id):
 
 
 
-# checkout(order finalize)
+
 
 @login_required
 def checkout(request):
     cart = request.session.get('cart', {})
     cart_restaurant_id = request.session.get('cart_restaurant_id')
 
-    # If cart is empty send them back
     if not cart:
         messages.warning(request, 'Your cart is empty!')
         return redirect('home')
 
     restaurant = get_object_or_404(Restaurant, id=cart_restaurant_id)
 
-    # Build cart items for display
     items = []
-    total = 0
+    subtotal = 0
     for item_id, item_data in cart.items():
         menu_item = get_object_or_404(MenuItem, id=item_id)
         quantity = item_data['quantity']
-        subtotal = menu_item.price * quantity
-        total += subtotal
+        item_subtotal = menu_item.price * quantity
+        subtotal += item_subtotal
         items.append({
             'item': menu_item,
             'quantity': quantity,
-            'subtotal': subtotal,
+            'subtotal': item_subtotal,
         })
+
+    delivery_charge = 30
 
     if request.method == 'POST':
         phone = request.POST.get('phone', '').strip()
         address = request.POST.get('address', '').strip()
         payment_method = request.POST.get('payment_method', 'COD')
 
-        # Validate phone and address
         if not phone or not address:
-            messages.error(request, '❌ Phone number and address are required!')
+            messages.error(request, '❌ Phone and address are required!')
             return render(request, 'orders/checkout.html', {
                 'items': items,
-                'total': total,
+                'subtotal': subtotal,
+                'delivery_charge': delivery_charge,
+                'total': subtotal + delivery_charge,
                 'restaurant': restaurant,
                 'user': request.user,
             })
@@ -131,23 +141,27 @@ def checkout(request):
             messages.error(request, '❌ Please enter a valid phone number!')
             return render(request, 'orders/checkout.html', {
                 'items': items,
-                'total': total,
+                'subtotal': subtotal,
+                'delivery_charge': delivery_charge,
+                'total': subtotal + delivery_charge,
                 'restaurant': restaurant,
                 'user': request.user,
             })
 
-        # Create the order
+        delivery_charge = calculate_delivery_charge(address)
+        grand_total = subtotal + delivery_charge
+
         order = Order.objects.create(
             user=request.user,
             restaurant=restaurant,
-            total_price=total,
+            total_price=subtotal,
+            delivery_charge=delivery_charge,
             payment_method=payment_method,
             customer_phone=phone,
             customer_address=address,
             status='PENDING',
         )
 
-        # Create order items
         for item_id, item_data in cart.items():
             menu_item = get_object_or_404(MenuItem, id=item_id)
             OrderItem.objects.create(
@@ -157,11 +171,9 @@ def checkout(request):
                 price=menu_item.price,
             )
 
-        # Clear the cart
         request.session['cart'] = {}
         request.session['cart_restaurant_id'] = None
 
-        # If Bkash or Nagad, go to dummy payment page
         if payment_method in ['BKASH', 'NAGAD']:
             return redirect('orders:dummy_payment', order_id=order.id)
 
@@ -170,15 +182,12 @@ def checkout(request):
 
     return render(request, 'orders/checkout.html', {
         'items': items,
-        'total': total,
+        'subtotal': subtotal,
+        'delivery_charge': delivery_charge,
+        'total': subtotal + delivery_charge,
         'restaurant': restaurant,
         'user': request.user,
     })
-
-
-
-# order view
-
 
 @login_required
 def order_success(request, order_id):
@@ -202,7 +211,6 @@ def order_detail(request, order_id):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    # Can only cancel PENDING orders
     if order.status == 'PENDING':
         order.status = 'CANCELED'
         order.save()

@@ -7,7 +7,6 @@
 <div class="card mb-5 overflow-hidden">
     <div class="row g-0">
 
-        <!-- Restaurant Image -->
         <div class="col-md-5">
             {% if restaurant.image %}
                 <img src="{{ restaurant.image.url }}"
@@ -22,7 +21,6 @@
             {% endif %}
         </div>
 
-        <!-- Restaurant Info -->
         <div class="col-md-7">
             <div class="card-body p-4">
                 <h2 style="color:#00b4d8;">{{ restaurant.name }}</h2>
@@ -65,7 +63,6 @@
     </div>
 </div>
 
-<!-- Menu Section -->
 <h3 class="section-title">🍽️ Menu</h3>
 
 {% if not user.is_authenticated %}
@@ -105,27 +102,36 @@
                        style="font-size:3rem; color:#415a77;"></i>
                 </div>
             {% endif %}
+<div class="card-body">
+    <h5 style="color:#00b4d8;">{{ item.name }}</h5>
+    <p class="card-text" style="font-size:0.9rem; color:#aaa;">
+        {{ item.description }}
+    </p>
 
-            <div class="card-body">
-                <h5 style="color:#00b4d8;">{{ item.name }}</h5>
-                <p class="card-text" style="font-size:0.9rem; color:#aaa;">
-                    {{ item.description }}
+    <!-- Allergy Warning -->
+    {% if user_allergies and item.ingredients %}
+        {% for allergy in user_allergies %}
+            {% if allergy in item.ingredients|lower %}
+                <p class="allergy-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Contains your allergen: {{ allergy }}
                 </p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
-                <!-- Allergy Warning -->
-                {% if user_allergies and item.ingredients %}
-                    {% for allergy in user_allergies %}
-                        {% if allergy in item.ingredients|lower %}
-                            <p class="allergy-warning">
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-                                Contains your allergen: {{ allergy }}
-                            </p>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
+    {% if item.ingredients %}
+    <div class="mt-2 mb-2 p-2"
+         style="background:#0d1b2a; border-radius:8px; font-size:0.82rem;">
+        <span style="color:#00b4d8;">
+            <i class="bi bi-list-ul"></i> Ingredients:
+        </span>
+        <span style="color:#aaa;">{{ item.ingredients }}</span>
+    </div>
+    {% endif %}
 
-                <h5 class="mt-2">৳{{ item.price }}</h5>
-            </div>
+    <h5 class="mt-2">৳{{ item.price }}</h5>
+</div>
 
             <div class="card-footer border-0 bg-transparent pb-3">
                 {% if user.is_authenticated %}
