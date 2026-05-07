@@ -1,110 +1,229 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from menu.models import MenuItem
+from django.contrib import messages
+from restaurants.models import MenuItem, Restaurant
 from .models import Order, OrderItem
-from django.utils.crypto import get_random_string
-from payments.models import Payment
-from django.contrib.admin.views.decorators import staff_member_required
 
-@login_required
-def create_order(request):
+
+
+# cart view (show)
+
+
+def add_to_cart(request, item_id):
+    item = get_object_or_404(MenuItem, id=item_id)
     cart = request.session.get('cart', {})
 
+    # Check if cart has items from a different restaurant
+    cart_restaurant_id = request.session.get('cart_restaurant_id')
+
+    if cart_restaurant_id and int(cart_restaurant_id) != item.restaurant.id:
+        # Clear cart because different restaurant
+        cart = {}
+        messages.warning(request, '⚠️ Your cart was cleared because you switched restaurants.')
+
+    # Add item or increase quantity
+    if str(item_id) in cart:
+        cart[str(item_id)]['quantity'] += 1
+    else:
+        cart[str(item_id)] = {'quantity': 1}
+
+    # Save to session
+    request.session['cart'] = cart
+    request.session['cart_restaurant_id'] = item.restaurant.id
+
+    messages.success(request, f'✅ {item.name} added to cart!')
+    return redirect('restaurants:restaurant_detail', pk=item.restaurant.id)
+
+
+def view_cart(request):
+    cart = request.session.get('cart', {})
+    cart_restaurant_id = request.session.get('cart_restaurant_id')
+
+    items = []
+    total = 0
+    restaurant = None
+
+    if cart_restaurant_id:
+        try:
+            restaurant = Restaurant.objects.get(id=cart_restaurant_id)
+        except Restaurant.DoesNotExist:
+            pass
+
+    for item_id, item_data in cart.items():
+        try:
+            menu_item = MenuItem.objects.get(id=item_id)
+            quantity = item_data['quantity']
+            subtotal = menu_item.price * quantity
+            total += subtotal
+            items.append({
+                'item': menu_item,
+                'quantity': quantity,
+                'subtotal': subtotal,
+            })
+        except MenuItem.DoesNotExist:
+            pass
+
+    return render(request, 'orders/cart.html', {
+        'items': items,
+        'total': total,
+        'restaurant': restaurant,
+    })
+
+
+def remove_from_cart(request, item_id):
+    cart = request.session.get('cart', {})
+    cart.pop(str(item_id), None)
+    request.session['cart'] = cart
+
+    # If cart is now empty, clear restaurant too
     if not cart:
-        return redirect('/')
+        request.session['cart_restaurant_id'] = None
 
-    total_price = 0
+    messages.success(request, '🗑️ Item removed from cart.')
+    return redirect('orders:view_cart')
 
-    # Calculate total
-    for item_id, quantity in cart.items():
-        menu_item = MenuItem.objects.get(id=item_id)
-        total_price += menu_item.price * quantity
 
-    # Create order
-    order = Order.objects.create(
-        user=request.user,
-        total_price=total_price
-    )
 
-    # Create order items
-    for item_id, quantity in cart.items():
-        menu_item = MenuItem.objects.get(id=item_id)
-        OrderItem.objects.create(
-            order=order,
-            menu_item=menu_item,
-            quantity=quantity,
-            price=menu_item.price
+# checkout(order finalize)
+
+@login_required
+def checkout(request):
+    cart = request.session.get('cart', {})
+    cart_restaurant_id = request.session.get('cart_restaurant_id')
+
+    # If cart is empty send them back
+    if not cart:
+        messages.warning(request, 'Your cart is empty!')
+        return redirect('home')
+
+    restaurant = get_object_or_404(Restaurant, id=cart_restaurant_id)
+
+    # Build cart items for display
+    items = []
+    total = 0
+    for item_id, item_data in cart.items():
+        menu_item = get_object_or_404(MenuItem, id=item_id)
+        quantity = item_data['quantity']
+        subtotal = menu_item.price * quantity
+        total += subtotal
+        items.append({
+            'item': menu_item,
+            'quantity': quantity,
+            'subtotal': subtotal,
+        })
+
+    if request.method == 'POST':
+        phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
+        payment_method = request.POST.get('payment_method', 'COD')
+
+        # Validate phone and address
+        if not phone or not address:
+            messages.error(request, '❌ Phone number and address are required!')
+            return render(request, 'orders/checkout.html', {
+                'items': items,
+                'total': total,
+                'restaurant': restaurant,
+                'user': request.user,
+            })
+
+        if len(phone) < 11:
+            messages.error(request, '❌ Please enter a valid phone number!')
+            return render(request, 'orders/checkout.html', {
+                'items': items,
+                'total': total,
+                'restaurant': restaurant,
+                'user': request.user,
+            })
+
+        # Create the order
+        order = Order.objects.create(
+            user=request.user,
+            restaurant=restaurant,
+            total_price=total,
+            payment_method=payment_method,
+            customer_phone=phone,
+            customer_address=address,
+            status='PENDING',
         )
 
-    # Clear cart
-    request.session['cart'] = {}
+        # Create order items
+        for item_id, item_data in cart.items():
+            menu_item = get_object_or_404(MenuItem, id=item_id)
+            OrderItem.objects.create(
+                order=order,
+                menu_item=menu_item,
+                quantity=item_data['quantity'],
+                price=menu_item.price,
+            )
 
-    # Redirect to success page
-    return redirect('order_success', order_id=order.id)
+        # Clear the cart
+        request.session['cart'] = {}
+        request.session['cart_restaurant_id'] = None
+
+        # If Bkash or Nagad, go to dummy payment page
+        if payment_method in ['BKASH', 'NAGAD']:
+            return redirect('orders:dummy_payment', order_id=order.id)
+
+        messages.success(request, '🎉 Order placed successfully!')
+        return redirect('orders:order_success', order_id=order.id)
+
+    return render(request, 'orders/checkout.html', {
+        'items': items,
+        'total': total,
+        'restaurant': restaurant,
+        'user': request.user,
+    })
+
+
+
+# order view
 
 
 @login_required
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    items = OrderItem.objects.filter(order=order)
-    return render(request, 'order_success.html', {'order': order, 'items': items})
+    return render(request, 'orders/order_success.html', {'order': order})
 
 
 @login_required
 def my_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'my_orders.html', {'orders': orders})
+    return render(request, 'orders/my_orders.html', {'orders': orders})
 
 
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    items = OrderItem.objects.filter(order=order)
-    return render(request, 'order_detail.html', {
-        'order': order,
-        'items': items
-    })
-
-
+    return render(request, 'orders/order_detail.html', {'order': order})
 
 
 @login_required
-def make_payment(request, order_id):
+def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    if order.is_paid:
-        return redirect('order_detail', order_id=order.id)
+    # Can only cancel PENDING orders
+    if order.status == 'PENDING':
+        order.status = 'CANCELED'
+        order.save()
+        messages.success(request, '✅ Order cancelled successfully.')
+    else:
+        messages.error(request, '❌ You can only cancel pending orders.')
 
-    transaction_id = get_random_string(12)
+    return redirect('orders:my_orders')
 
-    Payment.objects.create(
-        order=order,
-        transaction_id=transaction_id,
-        amount=order.total_price,
-        paid_by=request.user
-    )
 
+@login_required
+def dummy_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'orders/dummy_payment.html', {'order': order})
+
+
+@login_required
+def confirm_dummy_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
     order.is_paid = True
-    order.status = "PREPARING"
+    order.status = 'PREPARING'
     order.save()
-
-    return render(request, 'payment_success.html', {
-        'order': order,
-        'transaction_id': transaction_id
-    })
-
-
-@staff_member_required
-def update_order_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in ['PENDING', 'PREPARING', 'DELIVERED']:
-            order.status = new_status
-            order.save()
-    return redirect('admin_orders')
-
-@staff_member_required
-def admin_orders(request):
-    orders = Order.objects.all().order_by('-created_at')
-    return render(request, 'admin_orders.html', {'orders': orders})
+    messages.success(request, '✅ Payment confirmed!')
+    return redirect('orders:order_success', order_id=order.id)

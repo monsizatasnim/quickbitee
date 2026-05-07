@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }} - Menu{% endblock %}
+
+{% block content %}
+
+<div class="card p-4 mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="{{ restaurant.image.url }}" class="img-fluid rounded" alt="{{ restaurant.name }}">
+        </div>
+        <div class="col-md-8">
+            <h2 class="section-title">{{ restaurant.name }}</h2>
+            <p>{{ restaurant.description }}</p>
+            <p><i class="bi bi-geo-alt-fill"></i> {{ restaurant.address }}</p>
+            <p><strong>Owner:</strong> {{ restaurant.owner.get_full_name|default:restaurant.owner.username }}</p>
+        </div>
+    </div>
+</div>
+
+<h3 class="section-title mt-5">Menu</h3>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for item in restaurant.menu_items.all %}
+    <div class="col">
+        <div class="card h-100 p-3">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 180px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title" style="color:#00b4d8;">{{ item.name }}</h5>
+                <p class="card-text">{{ item.description }}</p>
+                <p class="fw-bold">💰 ৳{{ item.price }}</p>
+            </div>
+            <div class="card-footer border-0 bg-transparent">
+    <a href="{% url 'orders:add_to_cart' item.id %}" class="btn btn-primary w-100">
+        <i class="bi bi-cart-plus"></i> Add to Cart
+    </a>
+</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

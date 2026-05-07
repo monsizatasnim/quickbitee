@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - QuickBite{% endblock %}
+
+{% block content %}
+<h2 class="section-title">Select a Restaurant</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for restaurant in restaurants %}
+    <div class="col">
+        <a href="{% url 'restaurants:restaurant_detail' restaurant.pk %}" class="text-decoration-none">
+            <div class="card h-100 p-3">
+                {% if restaurant.image %}
+                <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title" style="color:#00b4d8;">{{ restaurant.name }}</h5>
+                    <p class="card-text">{{ restaurant.description|truncatewords:20 }}</p>
+                    <p><i class="bi bi-geo-alt-fill"></i> {{ restaurant.address }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - QuickBite{% endblock %}
+
+{% block content %}
+
+<h2 class="section-title">🧾 Checkout</h2>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+
+    <!-- Left: Delivery Info Form -->
+    <div class="col-md-7">
+        <div class="card p-4 mb-4">
+            <h4 style="color:#00b4d8;">📍 Delivery Information</h4>
+            <hr style="border-color:#415a77;">
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control"
+                           value="{{ user.get_full_name|default:user.username }}"
+                           readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Phone Number <span style="color:red;">*</span>
+                    </label>
+                    <input type="text" name="phone" class="form-control"
+                           placeholder="e.g. 01712345678"
+                           value="{{ user.phone_number|default:'' }}"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Delivery Address <span style="color:red;">*</span>
+                    </label>
+                    <textarea name="address" class="form-control" rows="3"
+                              placeholder="Enter your full delivery address"
+                              required>{{ user.address|default:'' }}</textarea>
+                </div>
+
+                <h4 style="color:#00b4d8;" class="mt-4">💳 Payment Method</h4>
+                <hr style="border-color:#415a77;">
+
+                <!-- Cash on Delivery -->
+                <div class="form-check mb-3 p-3"
+                     style="background:#0d1b2a; border-radius:8px; border:1px solid #415a77;">
+                    <input class="form-check-input" type="radio"
+                           name="payment_method" value="COD"
+                           id="cod" checked>
+                    <label class="form-check-label" for="cod">
+                        <i class="bi bi-cash-coin"></i>
+                        <strong>Cash on Delivery</strong>
+                        <br>
+                        <small class="text-muted">Pay when your food arrives</small>
+                    </label>
+                </div>
+
+                <!-- Bkash -->
+                <div class="form-check mb-3 p-3"
+                     style="background:#0d1b2a; border-radius:8px; border:1px solid #415a77;">
+                    <input class="form-check-input" type="radio"
+                           name="payment_method" value="BKASH" id="bkash">
+                    <label class="form-check-label" for="bkash">
+                        <span style="color:#e2136e; font-weight:700;">bKash</span>
+                        <br>
+                        <small class="text-muted">Pay online with bKash</small>
+                    </label>
+                </div>
+
+                <!-- Nagad -->
+                <div class="form-check mb-3 p-3"
+                     style="background:#0d1b2a; border-radius:8px; border:1px solid #415a77;">
+                    <input class="form-check-input" type="radio"
+                           name="payment_method" value="NAGAD" id="nagad">
+                    <label class="form-check-label" for="nagad">
+                        <span style="color:#f6821f; font-weight:700;">Nagad</span>
+                        <br>
+                        <small class="text-muted">Pay online with Nagad</small>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 mt-3">
+                    🎉 Place Order
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h4 style="color:#00b4d8;">📋 Order Summary</h4>
+            <p style="color:#aaa;">From: <strong style="color:white;">{{ restaurant.name }}</strong></p>
+            <hr style="border-color:#415a77;">
+
+            {% for entry in items %}
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ entry.item.name }} x{{ entry.quantity }}</span>
+                <span>৳{{ entry.subtotal }}</span>
+            </div>
+            {% endfor %}
+
+            <hr style="border-color:#415a77;">
+            <div class="d-flex justify-content-between">
+                <strong>Total</strong>
+                <strong>৳{{ total }}</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
