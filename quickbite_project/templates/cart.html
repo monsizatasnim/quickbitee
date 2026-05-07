@@ -3,35 +3,15 @@
 <head>
     <title>Your Cart - QuickBite</title>
     <style>
-        body {
-            font-family: Arial;
-            background: #1a1a2e;
-            color: white;
-            padding: 30px;
-        }
-        h1 {
-            color: #00b4d8;
-        }
-        .item {
-            background: #16213e;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-        }
-        .btn {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-top: 15px;
-        }
-        .checkout {
-            background: #2a9d8f;
-        }
-        .back {
-            background: #0077b6;
-        }
+        body { font-family: Arial; background: #1a1a2e; color: white; padding: 30px; }
+        h1 { color: #00b4d8; }
+        .item { background: #16213e; padding: 15px; margin: 10px 0; border-radius: 10px; }
+        .btn { color: white; text-decoration: none; padding: 10px 20px;
+               border-radius: 8px; display: inline-block; margin-top: 15px; }
+        .checkout { background: #2a9d8f; }
+        .back { background: #0077b6; }
+        .remove-btn { background: #e63946; padding: 6px 12px; border-radius: 6px;
+                      color: white; text-decoration: none; display: inline-block; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -44,11 +24,13 @@
         <h3>{{ entry.item.name }}</h3>
         <p>📦 Quantity: {{ entry.quantity }}</p>
         <p>💵 Subtotal: ৳{{ entry.subtotal }}</p>
+        <a href="{% url 'remove_from_cart' entry.item.id %}" class="remove-btn">❌ Remove</a>
     </div>
     {% endfor %}
 
     <h2>Total: ৳{{ total }}</h2>
 
+    <!-- THIS IS THE FIXED LINE - now actually goes to checkout -->
     <a class="btn checkout" href="{% url 'create_order' %}">✅ Place Order</a>
 
 {% else %}
