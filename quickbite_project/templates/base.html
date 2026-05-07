@@ -117,7 +117,6 @@
             font-weight: 600;
         }
 
-        /* Alert messages */
         .alert {
             border-radius: 8px;
         }
@@ -141,7 +140,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center gap-2">
 
-                <!-- Home/Restaurants -->
+                <!-- Restaurants -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'home' %}">
                         <i class="bi bi-shop"></i> Restaurants
@@ -163,14 +162,25 @@
                             <i class="bi bi-bag"></i> My Orders
                         </a>
                     </li>
-                {% if user.is_restaurant_owner %}
+
+                    <!-- Profile -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:profile' %}">
+                            <i class="bi bi-person-circle"></i>
+                            {{ user.first_name|default:user.username }}
+                        </a>
+                    </li>
+
+                    <!-- Dashboard (owners only) -->
+                    {% if user.is_restaurant_owner %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'restaurants:owner_dashboard' %}">
                             <i class="bi bi-speedometer2"></i> My Dashboard
                         </a>
                     </li>
-    {% endif %}
-                    <!-- Admin link (only for staff) -->
+                    {% endif %}
+
+                    <!-- Admin Panel (staff only) -->
                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="/admin/">
@@ -179,9 +189,9 @@
                     </li>
                     {% endif %}
 
-                    <!-- Logout -->
+                    <!-- ✅ CHANGED: logout now uses accounts:logout -->
                     <li class="nav-item">
-                        <form method="post" action="{% url 'logout' %}">
+                        <form method="post" action="{% url 'accounts:logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-danger">
                                 <i class="bi bi-box-arrow-right"></i> Logout
@@ -191,16 +201,16 @@
 
                 {% else %}
 
-                    <!-- Login -->
+                    <!-- ✅ CHANGED: login now uses accounts:login -->
                     <li class="nav-item">
-                        <a class="btn btn-sm btn-primary" href="{% url 'login' %}">
+                        <a class="btn btn-sm btn-primary" href="{% url 'accounts:login' %}">
                             <i class="bi bi-person"></i> Login
                         </a>
                     </li>
 
-                    <!-- Register -->
+                    <!-- ✅ CHANGED: register now uses accounts:register -->
                     <li class="nav-item">
-                        <a class="btn btn-sm btn-success" href="{% url 'register' %}">
+                        <a class="btn btn-sm btn-success" href="{% url 'accounts:register' %}">
                             <i class="bi bi-person-plus"></i> Register
                         </a>
                     </li>
@@ -212,7 +222,7 @@
     </div>
 </nav>
 
-<!-- MESSAGES (alerts) -->
+<!-- MESSAGES -->
 <div class="container mt-3">
     {% if messages %}
         {% for message in messages %}
