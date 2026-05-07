@@ -43,3 +43,9 @@ def view_cart(request):
         })
 
     return render(request, 'cart.html', {'items': items, 'total': total})
+
+def remove_from_cart(request, item_id):
+    cart = request.session.get('cart', {})
+    cart.pop(str(item_id), None)
+    request.session['cart'] = cart
+    return redirect('view_cart')
