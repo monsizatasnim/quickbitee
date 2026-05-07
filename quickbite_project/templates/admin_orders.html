@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - All Orders</title>
+    <style>
+        body { background:#0d1b2a; color:white; font-family:Arial; padding:40px; }
+        h1 { color:#00b4d8; }
+        .order-box { background:#1b263b; padding:20px; margin:15px 0; border-radius:12px; }
+        select { background:#0d1b2a; color:white; border:1px solid #415a77; padding:6px 10px; border-radius:6px; }
+        button { background:#2a9d8f; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; }
+        .status-PENDING { color:orange; }
+        .status-PREPARING { color:deepskyblue; }
+        .status-DELIVERED { color:lightgreen; }
+    </style>
+</head>
+<body>
+<h1>🛠 Admin — All Orders</h1>
+{% for order in orders %}
+<div class="order-box">
+    <p><strong>Order #{{ order.id }}</strong> — {{ order.user.username }}</p>
+    <p>Total: {{ order.total_price }} Tk &nbsp;|&nbsp; Paid: {% if order.is_paid %}✅{% else %}❌{% endif %}</p>
+    <p>Status: <span class="status-{{ order.status }}">{{ order.status }}</span></p>
+    <form method="post" action="{% url 'update_order_status' order.id %}">
+        {% csrf_token %}
+        <select name="status">
+            <option {% if order.status == 'PENDING' %}selected{% endif %}>PENDING</option>
+            <option {% if order.status == 'PREPARING' %}selected{% endif %}>PREPARING</option>
+            <option {% if order.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
+        </select>
+        <button type="submit">Update Status</button>
+    </form>
+</div>
+{% endfor %}
+<a href="/" style="color:#00b4d8;">← Back to Menu</a>
+</body>
+</html>

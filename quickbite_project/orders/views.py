@@ -4,6 +4,7 @@ from menu.models import MenuItem
 from .models import Order, OrderItem
 from django.utils.crypto import get_random_string
 from payments.models import Payment
+from django.contrib.admin.views.decorators import staff_member_required
 
 @login_required
 def create_order(request):
@@ -47,12 +48,14 @@ def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     items = OrderItem.objects.filter(order=order)
     return render(request, 'order_success.html', {'order': order, 'items': items})
-from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def my_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'my_orders.html', {'orders': orders})
+
+
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -89,3 +92,19 @@ def make_payment(request, order_id):
         'order': order,
         'transaction_id': transaction_id
     })
+
+
+@staff_member_required
+def update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in ['PENDING', 'PREPARING', 'DELIVERED']:
+            order.status = new_status
+            order.save()
+    return redirect('admin_orders')
+
+@staff_member_required
+def admin_orders(request):
+    orders = Order.objects.all().order_by('-created_at')
+    return render(request, 'admin_orders.html', {'orders': orders})
