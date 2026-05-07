@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'orders',
     'group_order',
     'payments',
+    'restaurants',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
