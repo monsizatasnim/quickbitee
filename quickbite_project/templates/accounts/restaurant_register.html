@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% block title %}Restaurant Sign Up - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-3 mb-5">
+    <div class="col-md-10">
+        <div class="card p-0 overflow-hidden">
+            <div class="row g-0">
+
+                <!-- LEFT: Info Panel -->
+                <div class="col-md-4 d-flex flex-column
+                            align-items-center justify-content-center p-5"
+                     style="background: linear-gradient(
+                                160deg,
+                                var(--teal-accent),
+                                var(--teal-dark)
+                            );">
+
+                    <i class="bi bi-shop"
+                       style="font-size:4rem;
+                              color:var(--copper-bright);"></i>
+
+                    <h3 class="mt-3 text-center"
+                        style="color:white;">
+                        Join QuickBite
+                    </h3>
+                    <p class="text-center mt-2"
+                       style="color:rgba(255,255,255,0.75);">
+                        List your restaurant and start receiving
+                        online orders today!
+                    </p>
+
+                    <hr style="border-color:rgba(255,255,255,0.2);
+                               width:100%; margin:20px 0;">
+
+                    <div style="color:rgba(255,255,255,0.75);"
+                         class="w-100">
+                        <p class="mb-2">
+                            <i class="bi bi-check-circle-fill"
+                               style="color:var(--copper-bright);"></i>
+                            Manage your menu easily
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-check-circle-fill"
+                               style="color:var(--copper-bright);"></i>
+                            Receive orders in real-time
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-check-circle-fill"
+                               style="color:var(--copper-bright);"></i>
+                            Track deliveries
+                        </p>
+                        <p class="mb-0">
+                            <i class="bi bi-check-circle-fill"
+                               style="color:var(--copper-bright);"></i>
+                            Grow your business
+                        </p>
+                    </div>
+
+                    <hr style="border-color:rgba(255,255,255,0.2);
+                               width:100%; margin:20px 0;">
+
+                    <p style="color:rgba(255,255,255,0.75);">
+                        Already have an account?
+                    </p>
+                    <a href="{% url 'accounts:restaurant_login' %}"
+                       class="btn w-100"
+                       style="border:2px solid var(--copper-bright);
+                              color:var(--copper-bright);">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Restaurant Login
+                    </a>
+                </div>
+
+                <!-- RIGHT: Form -->
+                <div class="col-md-8 p-5">
+
+                    <h3 class="section-title">
+                        🍽️ Register Your Restaurant
+                    </h3>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- OWNER INFO -->
+                        <h6 style="color:var(--copper-bright);"
+                            class="mb-3 mt-2">
+                            <i class="bi bi-person-fill"></i>
+                            Owner Information
+                        </h6>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                <small class="text-danger">
+                                    {{ form.first_name.errors }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                <small class="text-danger">
+                                    {{ form.last_name.errors }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Username *</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <small class="text-danger">
+                                {{ form.username.errors }}
+                            </small>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <small class="text-danger">
+                                    {{ form.email.errors }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Phone Number *
+                                </label>
+                                {{ form.phone_number }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Password *</label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                <small class="text-danger">
+                                    {{ form.password1.errors }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Confirm Password *
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                <small class="text-danger">
+                                    {{ form.password2.errors }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--teal-light);
+                                   margin:20px 0;">
+
+                        <!-- RESTAURANT INFO -->
+                        <h6 style="color:var(--copper-bright);"
+                            class="mb-3">
+                            <i class="bi bi-shop-window"></i>
+                            Restaurant Information
+                        </h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Restaurant Name *
+                            </label>
+                            {{ form.restaurant_name }}
+                            {% if form.restaurant_name.errors %}
+                            <small class="text-danger">
+                                {{ form.restaurant_name.errors }}
+                            </small>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Description *
+                            </label>
+                            {{ form.restaurant_description }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">
+                                    Restaurant Address *
+                                </label>
+                                {{ form.restaurant_address }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    Restaurant Phone
+                                </label>
+                                {{ form.restaurant_phone }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Restaurant Image
+                                <small style="color:#a0a0a0;">
+                                    (optional but recommended)
+                                </small>
+                            </label>
+                            {{ form.restaurant_image }}
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-success w-100 py-3"
+                                style="font-size:1.05rem;">
+                            <i class="bi bi-shop"></i>
+                            Register My Restaurant
+                        </button>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

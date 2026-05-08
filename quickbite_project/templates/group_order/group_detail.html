@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% block title %}{{ group.name }} - QuickBite{% endblock %}
+
+{% block content %}
+
+<!-- Group Header -->
+<div class="card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3 style="color:var(--copper-bright);">
+                👥 {{ group.name }}
+            </h3>
+            <p class="mb-1">
+                <i class="bi bi-shop"
+                   style="color:var(--copper-bright);"></i>
+                {{ group.restaurant.name }}
+            </p>
+            <p class="mb-0">
+                <i class="bi bi-people"
+                   style="color:var(--copper-bright);"></i>
+                {{ group.get_total_members }} members
+            </p>
+        </div>
+        <div class="text-center">
+            <p class="mb-1" style="color:#a0a0a0; font-size:0.85rem;">
+                Share invite code:
+            </p>
+            <div style="background:var(--teal-dark);
+                        padding:10px 20px;
+                        border-radius:8px;
+                        border:2px solid var(--copper);">
+                <strong style="color:var(--copper-bright);
+                               font-size:1.5rem;
+                               letter-spacing:5px;">
+                    {{ group.invite_code }}
+                </strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <!-- LEFT: Menu -->
+    <div class="col-md-6">
+        <div class="card p-3 mb-4">
+            <h5 style="color:var(--copper-bright);">
+                <i class="bi bi-menu-button-wide"></i> Add Items
+            </h5>
+            <hr>
+
+            {% for item in menu_items %}
+            <div class="d-flex justify-content-between
+                        align-items-center mb-2 p-2"
+                 style="background:var(--teal-dark);
+                        border-radius:8px;">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <span style="color:var(--copper-bright);">
+                        ৳{{ item.price }}
+                    </span>
+                    {% if item.ingredients %}
+                    <br>
+                    <small style="color:#a0a0a0;">
+                        {{ item.ingredients }}
+                    </small>
+                    {% endif %}
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id"
+                           value="{{ item.id }}">
+                    <button type="submit"
+                            class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <p style="color:#a0a0a0;">No items available.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Payment Method for this member -->
+        <div class="card p-3">
+            <h5 style="color:var(--copper-bright);">
+                💳 Your Payment Method
+            </h5>
+            <hr>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="set_payment" value="1">
+
+                <div class="d-flex flex-column gap-2">
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="payment_method"
+                               value="COD" hidden
+                               {% if my_payment == 'COD' %}checked{% endif %}>
+                        <div class="p-2 d-flex align-items-center gap-2"
+                             style="background:var(--teal-dark);
+                                    border-radius:8px;
+                                    border:2px solid
+                                    {% if my_payment == 'COD' %}var(--copper){% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-cash-coin"
+                               style="color:var(--teal-accent);"></i>
+                            <strong>Cash on Delivery</strong>
+                        </div>
+                    </label>
+
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="payment_method"
+                               value="BKASH" hidden
+                               {% if my_payment == 'BKASH' %}checked{% endif %}>
+                        <div class="p-2 d-flex align-items-center gap-2"
+                             style="background:var(--teal-dark);
+                                    border-radius:8px;
+                                    border:2px solid
+                                    {% if my_payment == 'BKASH' %}var(--copper){% else %}var(--teal-light){% endif %};">
+                            <span style="color:#e2136e; font-weight:700;">
+                                bKash
+                            </span>
+                        </div>
+                    </label>
+
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="payment_method"
+                               value="NAGAD" hidden
+                               {% if my_payment == 'NAGAD' %}checked{% endif %}>
+                        <div class="p-2 d-flex align-items-center gap-2"
+                             style="background:var(--teal-dark);
+                                    border-radius:8px;
+                                    border:2px solid
+                                    {% if my_payment == 'NAGAD' %}var(--copper){% else %}var(--teal-light){% endif %};">
+                            <span style="color:#f6821f; font-weight:700;">
+                                Nagad
+                            </span>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary w-100 mt-3 btn-sm">
+                    Save Payment Method
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RIGHT: Cart + Bill -->
+    <div class="col-md-6">
+
+        <!-- Group Cart -->
+        <div class="card p-3 mb-3">
+            <h5 style="color:var(--copper-bright);">
+                <i class="bi bi-cart3"></i> Group Cart
+            </h5>
+            <hr>
+
+            {% for entry in group_items %}
+            <div class="d-flex justify-content-between
+                        align-items-center mb-2 p-2"
+                 style="background:var(--teal-dark);
+                        border-radius:8px;">
+                <div>
+                    <strong style="color:var(--copper-bright);">
+                        {{ entry.user.username }}
+                    </strong>
+                    <span style="color:#a0a0a0;"> → </span>
+                    {{ entry.menu_item.name }} x{{ entry.quantity }}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span style="color:var(--copper-bright);">
+                        ৳{{ entry.get_subtotal }}
+                    </span>
+                    {% if entry.user == request.user %}
+                    <a href="{% url 'group_order:remove_group_item' entry.id %}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Remove?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p style="color:#a0a0a0;">No items yet.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Bill Split with delivery -->
+        <div class="card p-3 mb-3">
+            <h5 style="color:var(--copper-bright);">
+                <i class="bi bi-receipt"></i> Bill Split
+            </h5>
+            <hr>
+
+            <div class="p-2 mb-3"
+                 style="background:var(--teal-dark);
+                        border-radius:8px;
+                        border-left:3px solid var(--copper);">
+                <small style="color:#a0a0a0;">
+                    <i class="bi bi-bicycle"
+                       style="color:var(--copper-bright);"></i>
+                    Delivery will be split equally among
+                    {{ group.get_total_members }} members
+                </small>
+            </div>
+
+            {% for username, bill in user_bills.items %}
+            <div class="mb-2 p-2"
+                 style="background:var(--teal-dark);
+                        border-radius:8px;">
+                <div class="d-flex justify-content-between">
+                    <span>
+                        <i class="bi bi-person-fill"
+                           style="color:var(--copper-bright);"></i>
+                        {{ username }}
+                    </span>
+                    <strong style="color:var(--copper-bright);">
+                        ৳{{ bill.total }}
+                    </strong>
+                </div>
+                <div style="font-size:0.8rem; color:#a0a0a0;"
+                     class="d-flex justify-content-between mt-1">
+                    <span>Food: ৳{{ bill.food }}</span>
+                    <span>Delivery share: ৳{{ bill.delivery }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Total Group Bill</strong>
+                <strong style="color:var(--copper-bright);">
+                    ৳{{ total_group_bill }}
+                </strong>
+            </div>
+        </div>
+
+        <!-- Finalize -->
+        {% if request.user == group.created_by and group.is_active %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="finalize_group"
+                    class="btn btn-success w-100 py-3"
+                    onclick="return confirm(
+                        'Place the group order?'
+                    )">
+                <i class="bi bi-check-circle"></i>
+                Finalize & Place Order
+            </button>
+        </form>
+        <small style="color:#a0a0a0;" class="mt-2 d-block text-center">
+            Only group creator can finalize
+        </small>
+        {% endif %}
+
+    </div>
+</div>
+
+<a href="{% url 'group_order:group_list' %}"
+   class="btn btn-primary mt-3">← Back</a>
+
+{% endblock %}

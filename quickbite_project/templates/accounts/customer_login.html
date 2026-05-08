@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Customer Login - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="row g-0 card overflow-hidden">
+
+            <!-- Left Side: Visual -->
+            <div class="col-md-5 d-flex flex-column align-items-center
+                        justify-content-center p-5"
+                 style="background: linear-gradient(135deg, #00b4d8, #0077b6);">
+                <i class="bi bi-person-circle"
+                   style="font-size:5rem; color:white;"></i>
+                <h3 class="mt-3" style="color:white;">Customer Login</h3>
+                <p class="text-center mt-2" style="color:rgba(255,255,255,0.8);">
+                    Order your favorite food from the best restaurants!
+                </p>
+
+                <hr style="border-color:rgba(255,255,255,0.3); width:100%;">
+
+                <p style="color:rgba(255,255,255,0.8);">
+                    Are you a restaurant?
+                </p>
+                <a href="{% url 'accounts:restaurant_login' %}"
+                   class="btn btn-outline-light w-100">
+                    <i class="bi bi-shop"></i> Restaurant Login
+                </a>
+            </div>
+
+            <!-- Right Side: Form -->
+            <div class="col-md-7 p-5">
+                <h3 class="section-title">🔐 Welcome Back!</h3>
+                <p style="color:#aaa;">Sign in to your customer account</p>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input type="text" name="username"
+                               class="form-control form-control-lg"
+                               placeholder="Enter your username"
+                               required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <input type="password" name="password"
+                               class="form-control form-control-lg"
+                               placeholder="Enter your password"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+
+                <hr style="border-color:#415a77; margin: 25px 0;">
+
+                <p class="text-center">
+                    Don't have an account?
+                    <a href="{% url 'accounts:register' %}"
+                       style="color:var(--copper-bright);">
+                        Create New Account
+                    </a>
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

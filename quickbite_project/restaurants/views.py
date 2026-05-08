@@ -164,10 +164,34 @@ def update_order_status(request, order_id):
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        if new_status in ['PENDING', 'PREPARING', 'DELIVERED', 'CANCELED']:
+        valid = ['PENDING', 'CONFIRMED', 'PREPARING',
+                 'ON_THE_WAY', 'DELIVERED', 'CANCELED']
+
+        if new_status in valid:
             order.status = new_status
             order.save()
-            messages.success(request, f'✅ Order #{order.id} updated to {new_status}!')
+
+            # Send notification to customer
+            from orders.models import Notification
+
+            status_messages = {
+                'PENDING':    '🕐 Your order has been received.',
+                'CONFIRMED':  '✅ Your order has been confirmed by the restaurant!',
+                'PREPARING':  '👨‍🍳 The restaurant is now preparing your order!',
+                'ON_THE_WAY': '🚴 Your order is on the way!',
+                'DELIVERED':  '🎉 Your order has been delivered. Enjoy your meal!',
+                'CANCELED':   f'❌ Your order #{order.id} from {restaurant.name} has been canceled by the restaurant.',
+            }
+
+            Notification.objects.create(
+                user=order.user,
+                message=status_messages.get(new_status, 'Your order status has been updated.')
+            )
+
+            messages.success(
+                request,
+                f'✅ Order #{order.id} updated to {new_status}!'
+            )
 
     return redirect('restaurants:owner_dashboard')
 

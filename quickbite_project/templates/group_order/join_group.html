@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Join Group - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h3 class="section-title">🔑 Join a Group Order</h3>
+            <p style="color:#aaa;">
+                Ask your friend for their invite code and enter it below.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Invite Code</label>
+                    <input type="text" name="invite_code"
+                           class="form-control text-center"
+                           style="font-size:1.5rem; letter-spacing:5px;
+                                  text-transform:uppercase;"
+                           placeholder="e.g. AB12CD34"
+                           maxlength="8" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-person-check"></i> Join Group
+                </button>
+                <a href="{% url 'group_order:group_list' %}"
+                   class="btn btn-primary w-100 mt-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

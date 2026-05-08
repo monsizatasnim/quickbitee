@@ -5,35 +5,35 @@
 
 <h2 class="section-title">🧾 Checkout</h2>
 
-{% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-danger">{{ message }}</div>
-    {% endfor %}
-{% endif %}
-
 <div class="row">
 
-    <!--Delivery Info-->
+    <!-- LEFT: Form -->
     <div class="col-md-7">
         <div class="card p-4 mb-4">
-            <h4 style="color:#00b4d8;">📍 Delivery Information</h4>
-            <hr style="border-color:#415a77;">
+            <h4 style="color:var(--copper-bright);">
+                📍 Delivery Information
+            </h4>
+            <hr>
 
-            <form method="post">
+            <form method="post" id="checkoutForm">
                 {% csrf_token %}
 
                 <div class="mb-3">
                     <label class="form-label">Full Name</label>
                     <input type="text" class="form-control"
                            value="{{ user.get_full_name|default:user.username }}"
-                           readonly>
+                           readonly
+                           style="opacity:0.7;">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">
-                        Phone Number <span style="color:red;">*</span>
+                        Phone Number
+                        <span style="color:#c0392b;">*</span>
                     </label>
-                    <input type="text" name="phone" class="form-control"
+                    <input type="text" name="phone"
+                           id="phoneInput"
+                           class="form-control"
                            placeholder="e.g. 01712345678"
                            value="{{ user.phone_number|default:'' }}"
                            required>
@@ -41,73 +41,98 @@
 
                 <div class="mb-3">
                     <label class="form-label">
-                        Delivery Address <span style="color:red;">*</span>
+                        Delivery Address
+                        <span style="color:#c0392b;">*</span>
                     </label>
-                    <textarea name="address" class="form-control" rows="3"
+                    <textarea name="address"
+                              id="addressInput"
+                              class="form-control"
+                              rows="3"
                               placeholder="Enter your full delivery address"
                               required>{{ user.address|default:'' }}</textarea>
+                    <small style="color:#a0a0a0;">
+                        <i class="bi bi-info-circle"></i>
+                        Delivery charge updates automatically
+                    </small>
                 </div>
 
-                <!--Payment Method-->
-                <h4 style="color:#00b4d8;" class="mt-4">
-                    <i class="bi bi-credit-card"></i> Payment Method
+                <!-- PAYMENT METHOD -->
+                <h4 style="color:var(--copper-bright);" class="mt-4">
+                    💳 Payment Method
                 </h4>
-                <hr style="border-color:#415a77;">
+                <hr>
 
                 <div class="row g-3 mb-3">
 
-                    <!--COD-->
+                    <!-- Cash on Delivery -->
                     <div class="col-12">
                         <label class="w-100" style="cursor:pointer;">
                             <input type="radio" name="payment_method"
-                                   value="COD" id="cod"
-                                   checked hidden>
-                            <div class="payment-option p-3 rounded d-flex align-items-center gap-3"
-                                 style="background:#0d1b2a; border:2px solid #415a77;
-                                        border-radius:10px !important;"
-                                 onclick="selectPayment(this, 'cod')">
-                                <div style="width:50px; height:50px; background:#2a9d8f;
-                                            border-radius:50%; display:flex;
-                                            align-items:center; justify-content:center;">
+                                   value="COD" id="cod" checked hidden>
+                            <div class="payment-card p-3 d-flex
+                                        align-items-center gap-3"
+                                 style="background:var(--teal-dark);
+                                        border:2px solid var(--teal-light);
+                                        border-radius:10px;"
+                                 onclick="selectPayment(this,'cod')">
+                                <div style="width:48px; height:48px;
+                                            background:var(--teal-accent);
+                                            border-radius:50%;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;">
                                     <i class="bi bi-cash-coin"
-                                       style="font-size:1.5rem; color:white;"></i>
+                                       style="font-size:1.4rem;
+                                              color:white;"></i>
                                 </div>
                                 <div>
                                     <strong>Cash on Delivery</strong><br>
-                                    <small style="color:#aaa;">Pay when your food arrives</small>
+                                    <small style="color:#a0a0a0;">
+                                        Pay when food arrives
+                                    </small>
                                 </div>
-                                <div class="ms-auto">
-                                    <i class="bi bi-check-circle-fill"
-                                       id="check-cod"
-                                       style="color:#2a9d8f; font-size:1.3rem;"></i>
-                                </div>
+                                <i class="bi bi-check-circle-fill ms-auto"
+                                   id="check-cod"
+                                   style="color:var(--copper);
+                                          font-size:1.3rem;"></i>
                             </div>
                         </label>
                     </div>
 
-                    <!-- Bkash-->
+                    <!-- Bkash -->
                     <div class="col-12">
                         <label class="w-100" style="cursor:pointer;">
                             <input type="radio" name="payment_method"
                                    value="BKASH" id="bkash" hidden>
-                            <div class="payment-option p-3 rounded d-flex align-items-center gap-3"
-                                 style="background:#0d1b2a; border:2px solid #415a77;
-                                        border-radius:10px !important;"
-                                 onclick="selectPayment(this, 'bkash')">
-                                <div style="width:50px; height:50px; background:#e2136e;
-                                            border-radius:50%; display:flex;
-                                            align-items:center; justify-content:center;">
-                                    <strong style="color:white; font-size:0.8rem;">bKash</strong>
+                            <div class="payment-card p-3 d-flex
+                                        align-items-center gap-3"
+                                 style="background:var(--teal-dark);
+                                        border:2px solid var(--teal-light);
+                                        border-radius:10px;"
+                                 onclick="selectPayment(this,'bkash')">
+                                <div style="width:48px; height:48px;
+                                            background:#e2136e;
+                                            border-radius:50%;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;">
+                                    <strong style="color:white;
+                                                   font-size:0.75rem;">
+                                        bKash
+                                    </strong>
                                 </div>
                                 <div>
-                                    <strong style="color:#e2136e;">bKash</strong><br>
-                                    <small style="color:#aaa;">Pay online with bKash</small>
+                                    <strong style="color:#e2136e;">
+                                        bKash
+                                    </strong><br>
+                                    <small style="color:#a0a0a0;">
+                                        Online payment
+                                    </small>
                                 </div>
-                                <div class="ms-auto">
-                                    <i class="bi bi-check-circle-fill"
-                                       id="check-bkash"
-                                       style="color:#415a77; font-size:1.3rem;"></i>
-                                </div>
+                                <i class="bi bi-check-circle-fill ms-auto"
+                                   id="check-bkash"
+                                   style="color:var(--teal-light);
+                                          font-size:1.3rem;"></i>
                             </div>
                         </label>
                     </div>
@@ -117,105 +142,158 @@
                         <label class="w-100" style="cursor:pointer;">
                             <input type="radio" name="payment_method"
                                    value="NAGAD" id="nagad" hidden>
-                            <div class="payment-option p-3 rounded d-flex align-items-center gap-3"
-                                 style="background:#0d1b2a; border:2px solid #415a77;
-                                        border-radius:10px !important;"
-                                 onclick="selectPayment(this, 'nagad')">
-                                <div style="width:50px; height:50px; background:#f6821f;
-                                            border-radius:50%; display:flex;
-                                            align-items:center; justify-content:center;">
-                                    <strong style="color:white; font-size:0.8rem;">Nagad</strong>
+                            <div class="payment-card p-3 d-flex
+                                        align-items-center gap-3"
+                                 style="background:var(--teal-dark);
+                                        border:2px solid var(--teal-light);
+                                        border-radius:10px;"
+                                 onclick="selectPayment(this,'nagad')">
+                                <div style="width:48px; height:48px;
+                                            background:#f6821f;
+                                            border-radius:50%;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;">
+                                    <strong style="color:white;
+                                                   font-size:0.75rem;">
+                                        Nagad
+                                    </strong>
                                 </div>
                                 <div>
-                                    <strong style="color:#f6821f;">Nagad</strong><br>
-                                    <small style="color:#aaa;">Pay online with Nagad</small>
+                                    <strong style="color:#f6821f;">
+                                        Nagad
+                                    </strong><br>
+                                    <small style="color:#a0a0a0;">
+                                        Online payment
+                                    </small>
                                 </div>
-                                <div class="ms-auto">
-                                    <i class="bi bi-check-circle-fill"
-                                       id="check-nagad"
-                                       style="color:#415a77; font-size:1.3rem;"></i>
-                                </div>
+                                <i class="bi bi-check-circle-fill ms-auto"
+                                   id="check-nagad"
+                                   style="color:var(--teal-light);
+                                          font-size:1.3rem;"></i>
                             </div>
                         </label>
                     </div>
 
                 </div>
 
-                <button type="submit" class="btn btn-success w-100 mt-3">
+                <button type="submit" class="btn btn-success w-100 py-3"
+                        style="font-size:1.1rem;">
                     🎉 Place Order
                 </button>
+
             </form>
         </div>
     </div>
 
+    <!-- RIGHT: Order Summary -->
     <div class="col-md-5">
-    <div class="card p-4">
-        <h4 style="color:#00b4d8;">📋 Order Summary</h4>
-        <p style="color:#aaa;">
-            From: <strong style="color:white;">{{ restaurant.name }}</strong>
-        </p>
-        <hr style="border-color:#415a77;">
+        <div class="card p-4" style="position:sticky; top:20px;">
+            <h4 style="color:var(--copper-bright);">📋 Order Summary</h4>
+            <p style="color:#a0a0a0;">
+                From:
+                <strong style="color:var(--grey-white);">
+                    {{ restaurant.name }}
+                </strong>
+            </p>
+            <hr>
 
-        {% for entry in items %}
-        <div class="d-flex justify-content-between mb-2">
-            <span>{{ entry.item.name }} x{{ entry.quantity }}</span>
-            <span>৳{{ entry.subtotal }}</span>
-        </div>
-        {% endfor %}
+            {% for entry in items %}
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ entry.item.name }} x{{ entry.quantity }}</span>
+                <span>৳{{ entry.subtotal }}</span>
+            </div>
+            {% endfor %}
 
-        <hr style="border-color:#415a77;">
+            <hr>
 
-        <!-- Subtotal-->
-        <div class="d-flex justify-content-between mb-2">
-            <span>Subtotal</span>
-            <span>৳{{ subtotal }}</span>
-        </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Food Subtotal</span>
+                <span>৳{{ subtotal }}</span>
+            </div>
 
-        <!--Delivery Charge-->
-        <div class="d-flex justify-content-between mb-2">
-            <span>
-                <i class="bi bi-bicycle" style="color:#00b4d8;"></i>
-                Delivery Charge
-                <small style="color:#aaa; font-size:0.75rem;">
-                    (based on distance)
-                </small>
-            </span>
-            <span style="color:#00b4d8;">৳{{ delivery_charge }}</span>
-        </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>
+                    <i class="bi bi-bicycle"
+                       style="color:var(--copper-bright);"></i>
+                    Delivery Charge
+                    <small id="distanceText"
+                           style="color:#a0a0a0; font-size:0.75rem;">
+                    </small>
+                </span>
+                <span style="color:var(--copper-bright);"
+                      id="deliveryChargeDisplay">
+                    ৳{{ delivery_charge }}
+                </span>
+            </div>
 
-        <hr style="border-color:#415a77;">
+            <hr>
 
-        <!--Grand Total-->
-        <div class="d-flex justify-content-between">
-            <strong style="font-size:1.1rem;">Total</strong>
-            <strong style="font-size:1.1rem; color:#00b4d8;">
-                ৳{{ total }}
-            </strong>
+            <div class="d-flex justify-content-between">
+                <strong style="font-size:1.1rem;">Total</strong>
+                <strong style="font-size:1.2rem;
+                               color:var(--copper-bright);"
+                        id="grandTotalDisplay">
+                    ৳{{ total }}
+                </strong>
+            </div>
+
+            <!-- Hidden inputs for JS -->
+            <input type="hidden" id="subtotalValue" value="{{ subtotal }}">
+            <input type="hidden" id="restaurantId" value="{{ restaurant.id }}">
         </div>
     </div>
+
 </div>
 
 <script>
+// Payment method selection
 function selectPayment(el, id) {
-    document.querySelectorAll('.payment-option').forEach(function(opt) {
-        opt.style.border = '2px solid #415a77';
+    document.querySelectorAll('.payment-card').forEach(function(c) {
+        c.style.border = '2px solid var(--teal-light)';
     });
-
-    document.querySelectorAll('[id^="check-"]').forEach(function(chk) {
-        chk.style.color = '#415a77';
+    document.querySelectorAll('[id^="check-"]').forEach(function(c) {
+        c.style.color = 'var(--teal-light)';
     });
-
-    el.style.border = '2px solid #00b4d8';
-    document.getElementById('check-' + id).style.color = '#00b4d8';
+    el.style.border = '2px solid var(--copper)';
+    document.getElementById('check-' + id).style.color = 'var(--copper)';
     document.getElementById(id).checked = true;
 }
 
-window.addEventListener('DOMContentLoaded', function() {
-    const codOption = document.querySelector('[onclick="selectPayment(this, \'cod\')"]');
-    if (codOption) {
-        codOption.style.border = '2px solid #00b4d8';
-        document.getElementById('check-cod').style.color = '#00b4d8';
-    }
+// Auto-calculate delivery when address changes
+let deliveryTimer;
+document.getElementById('addressInput').addEventListener('input', function() {
+    clearTimeout(deliveryTimer);
+    deliveryTimer = setTimeout(function() {
+        let address = document.getElementById('addressInput').value;
+        let restaurantId = document.getElementById('restaurantId').value;
+        let subtotal = parseFloat(document.getElementById('subtotalValue').value);
+
+        if (address.length > 5) {
+            fetch('/orders/calculate-delivery/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    address: address,
+                    restaurant_id: restaurantId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('deliveryChargeDisplay').textContent =
+                    '৳' + data.charge;
+                document.getElementById('grandTotalDisplay').textContent =
+                    '৳' + (subtotal + data.charge).toFixed(2);
+                if (data.distance) {
+                    document.getElementById('distanceText').textContent =
+                        '(' + data.distance + ' km)';
+                }
+            });
+        }
+    }, 800); // Wait 0.8 seconds after typing stops
 });
 </script>
 

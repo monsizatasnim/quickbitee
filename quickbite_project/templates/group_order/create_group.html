@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Create Group - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 class="section-title">👥 Create Group Order</h3>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" name="name"
+                           class="form-control"
+                           placeholder="e.g. Friday Office Lunch"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Choose Restaurant
+                    </label>
+
+                    <!-- Search box -->
+                    <input type="text"
+                           id="restaurantSearch"
+                           class="form-control mb-2"
+                           placeholder="🔍 Search restaurant...">
+
+                    <!-- Hidden input to store selected restaurant -->
+                    <input type="hidden"
+                           name="restaurant_id"
+                           id="selectedRestaurantId"
+                           required>
+
+                    <!-- Restaurant list -->
+                    <div id="restaurantList"
+                         style="max-height:250px;
+                                overflow-y:auto;
+                                border:1px solid var(--teal-light);
+                                border-radius:8px;">
+
+                        {% for restaurant in restaurants %}
+                        <div class="restaurant-option p-3 d-flex
+                                    align-items-center gap-3"
+                             style="cursor:pointer;
+                                    border-bottom:1px solid var(--teal-light);"
+                             data-id="{{ restaurant.id }}"
+                             data-name="{{ restaurant.name }}"
+                             onclick="selectRestaurant(
+                                 '{{ restaurant.id }}',
+                                 '{{ restaurant.name }}'
+                             )">
+                            {% if restaurant.image %}
+                            <img src="{{ restaurant.image.url }}"
+                                 style="width:45px; height:45px;
+                                        object-fit:cover;
+                                        border-radius:8px;">
+                            {% else %}
+                            <div style="width:45px; height:45px;
+                                        background:var(--teal-light);
+                                        border-radius:8px;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;">
+                                <i class="bi bi-shop"
+                                   style="color:var(--copper-bright);"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <strong>{{ restaurant.name }}</strong>
+                                <br>
+                                <small style="color:#a0a0a0;">
+                                    {{ restaurant.address }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Show selected restaurant -->
+                    <div id="selectedDisplay"
+                         class="mt-2 p-2"
+                         style="display:none;
+                                background:var(--teal-dark);
+                                border-radius:8px;
+                                border:1px solid var(--copper);">
+                        ✅ Selected:
+                        <strong id="selectedName"
+                                style="color:var(--copper-bright);">
+                        </strong>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100"
+                        id="submitBtn" disabled>
+                    ✅ Create Group
+                </button>
+                <a href="{% url 'group_order:group_list' %}"
+                   class="btn btn-primary w-100 mt-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectRestaurant(id, name) {
+    document.getElementById('selectedRestaurantId').value = id;
+    document.getElementById('selectedName').textContent = name;
+    document.getElementById('selectedDisplay').style.display = 'block';
+    document.getElementById('submitBtn').disabled = false;
+
+    // Highlight selected
+    document.querySelectorAll('.restaurant-option').forEach(function(opt) {
+        opt.style.background = '';
+    });
+    document.querySelector('[data-id="' + id + '"]').style.background =
+        'rgba(184, 115, 51, 0.15)';
+}
+
+// Search filter
+document.getElementById('restaurantSearch').addEventListener('input', function() {
+    let val = this.value.toLowerCase();
+    document.querySelectorAll('.restaurant-option').forEach(function(opt) {
+        let name = opt.getAttribute('data-name').toLowerCase();
+        opt.style.display = name.includes(val) ? 'flex' : 'none';
+    });
+});
+</script>
+
+{% endblock %}

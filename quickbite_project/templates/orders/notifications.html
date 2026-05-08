@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Notifications - QuickBite{% endblock %}
+
+{% block content %}
+
+<h2 class="section-title">🔔 Notifications</h2>
+
+{% for notif in notifs %}
+<div class="card mb-2 p-3"
+     style="border-left: 3px solid
+     {% if '❌' in notif.message %}#c0392b
+     {% elif '🎉' in notif.message %}#2a9d8f
+     {% else %}#b87333{% endif %};">
+    <div class="d-flex justify-content-between">
+        <p class="mb-0">{{ notif.message }}</p>
+        <small style="color:#a0a0a0; white-space:nowrap; margin-left:15px;">
+            {{ notif.created_at|date:"d M, h:i A" }}
+        </small>
+    </div>
+</div>
+{% empty %}
+<div class="card p-5 text-center">
+    <p style="color:#a0a0a0;">No notifications yet.</p>
+</div>
+{% endfor %}
+
+{% endblock %}

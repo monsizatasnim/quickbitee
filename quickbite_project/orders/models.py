@@ -10,10 +10,12 @@ class Order(models.Model):
         ('NAGAD', 'Nagad'),
     ]
     STATUS_CHOICES = [
-        ('PENDING', 'Pending'),
-        ('PREPARING', 'Preparing'),
-        ('DELIVERED', 'Delivered'),
-        ('CANCELED', 'Canceled'),
+        ('PENDING',    'Order Placed'),
+        ('CONFIRMED',  'Confirmed'),
+        ('PREPARING',  'Preparing'),
+        ('ON_THE_WAY', 'On the Way'),
+        ('DELIVERED',  'Delivered'),
+        ('CANCELED',   'Canceled'),
     ]
 
     restaurant = models.ForeignKey(
@@ -65,3 +67,17 @@ class OrderItem(models.Model):
 
     def get_subtotal(self):
         return self.price * self.quantity
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"

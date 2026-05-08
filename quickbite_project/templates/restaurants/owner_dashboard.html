@@ -126,11 +126,23 @@
               action="{% url 'restaurants:update_order_status' order.id %}">
             {% csrf_token %}
             <select name="status" class="form-select form-select-sm mb-2"
-                    style="background:#0d1b2a; color:white; border-color:#415a77;">
-                <option {% if order.status == 'PENDING' %}selected{% endif %}>PENDING</option>
-                <option {% if order.status == 'PREPARING' %}selected{% endif %}>PREPARING</option>
-                <option {% if order.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
-                <option {% if order.status == 'CANCELED' %}selected{% endif %}>CANCELED</option>
+                    style="background:var(--teal-dark); color:var(--grey-white); border-color:var(--teal-light);">
+                <option value="PENDING"
+                        {% if order.status == 'PENDING' %}selected{% endif %}> 📋 Order Placed
+                </option>
+                <option value="PREPARING"
+                        {% if order.status == 'PREPARING' %}selected{% endif %}> 👨‍🍳 Preparing
+                </option>
+                <option value="ON_THE_WAY"
+                        {% if order.status == 'ON_THE_WAY' %}selected{% endif %}> 🚴 On the Way
+                </option>
+                <option value="DELIVERED"
+                        {% if order.status == 'DELIVERED' %}selected{% endif %}> 🎉 Delivered
+                </option>
+                <option value="CANCELED"
+                        {% if order.status == 'CANCELED' %}selected{% endif %}>
+                ❌ Cancel Order
+                </option>
             </select>
             <button type="submit" class="btn btn-success btn-sm w-100">
                 Update

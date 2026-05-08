@@ -4,29 +4,159 @@
 {% block content %}
 
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-9">
         <div class="card p-4">
             <h3 class="section-title">📦 Order #{{ order.id }}</h3>
 
+            <!-- ORDER TRACKER - 5 Steps -->
+            <div class="card p-4 mb-4" style="background:var(--teal-dark);">
+                <h5 style="color:var(--copper-bright);" class="mb-4">
+                    🚀 Order Status
+                </h5>
+                <div class="d-flex justify-content-between align-items-center position-relative">
+
+        <!-- Progress Line -->
+                    <div style="position:absolute; top:25px; left:5%; width:90%; height:3px;
+                    background:var(--teal-light); z-index:0;">
+
+                    </div>
+                    {% with step=order.status %}
+                    <!-- Step 1: Order Placed -->
+                    <div class="text-center" style="z-index:1; flex:1;">
+                        <div class="mx-auto rounded-circle d-flex
+                        align-items-center justify-content-center"
+                             style="width:46px; height:46px;
+                             background:{% if step in 'PENDING CONFIRMED PREPARING ON_THE_WAY DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-receipt"
+                               style="color:white;"></i>
+                        </div>
+                        <p class="mt-1 mb-0"
+                           style="font-size:0.72rem;
+                           color:{% if step in 'PENDING CONFIRMED PREPARING ON_THE_WAY DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};"> Order Placed
+                        </p>
+                    </div>
+
+        <!-- Step 2: Confirmed -->
+        <div class="text-center" style="z-index:1; flex:1;">
+            <div class="mx-auto rounded-circle d-flex
+                        align-items-center justify-content-center"
+                 style="width:46px; height:46px;
+                        background:{% if step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                <i class="bi bi-check-circle"
+                   style="color:white;"></i>
+            </div>
+            <p class="mt-1 mb-0"
+               style="font-size:0.72rem;
+                      color:{% if step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                Confirmed
+            </p>
+        </div>
+
+        <!-- Step 3: Preparing -->
+        <div class="text-center" style="z-index:1; flex:1;">
+            <div class="mx-auto rounded-circle d-flex
+                        align-items-center justify-content-center"
+                 style="width:46px; height:46px;
+                        background:{% if step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                <i class="bi bi-fire"
+                   style="color:white;"></i>
+            </div>
+            <p class="mt-1 mb-0"
+               style="font-size:0.72rem;
+                      color:{% if step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                Preparing
+            </p>
+        </div>
+
+        <!-- Step 4: On the Way -->
+        <div class="text-center" style="z-index:1; flex:1;">
+            <div class="mx-auto rounded-circle d-flex
+                        align-items-center justify-content-center"
+                 style="width:46px; height:46px;
+                        background:{% if step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                <i class="bi bi-bicycle"
+                   style="color:white;"></i>
+            </div>
+            <p class="mt-1 mb-0"
+               style="font-size:0.72rem;
+                      color:{% if step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                On the Way
+            </p>
+        </div>
+
+        <!-- Step 5: Delivered -->
+        <div class="text-center" style="z-index:1; flex:1;">
+            <div class="mx-auto rounded-circle d-flex
+                        align-items-center justify-content-center"
+                 style="width:46px; height:46px;
+                        background:{% if step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                <i class="bi bi-house-check"
+                   style="color:white;"></i>
+            </div>
+            <p class="mt-1 mb-0"
+               style="font-size:0.72rem;
+                      color:{% if step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                Delivered
+            </p>
+        </div>
+
+        {% endwith %}
+    </div>
+
+    {% if order.status == 'CANCELED' %}
+    <div class="alert alert-danger mt-4 text-center mb-0">
+        ❌ This order was canceled.
+    </div>
+    {% endif %}
+</div>
+            <!-- END TRACKER -->
+
+            <!-- Order Info -->
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <p><strong>Restaurant:</strong> {{ order.restaurant.name }}</p>
-                    <p><strong>Status:</strong>
-                        <span class="status-{{ order.status }}">{{ order.status }}</span>
+                    <p>
+                        <strong>Restaurant:</strong>
+                        {{ order.restaurant.name }}
                     </p>
-                    <p><strong>Total:</strong> ৳{{ order.total_price }}</p>
+                    <p>
+                        <strong>Payment:</strong>
+                        {{ order.get_payment_method_display }}
+                    </p>
+                    <p>
+                        <strong>Date:</strong>
+                        {{ order.created_at|date:"d M Y, h:i A" }}
+                    </p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Payment:</strong> {{ order.get_payment_method_display }}</p>
-                    <p><strong>Phone:</strong> {{ order.customer_phone }}</p>
-                    <p><strong>Address:</strong> {{ order.customer_address }}</p>
+                    <p>
+                        <strong>Phone:</strong>
+                        {{ order.customer_phone }}
+                    </p>
+                    <p>
+                        <strong>Address:</strong>
+                        {{ order.customer_address }}
+                    </p>
+                    <p>
+                        <strong>Paid:</strong>
+                        {% if order.is_paid %}
+                            <span style="color:lightgreen;">✅ Yes</span>
+                        {% else %}
+                            <span style="color:orange;">❌ No</span>
+                        {% endif %}
+                    </p>
                 </div>
             </div>
 
+            <!-- Items Table -->
             <h5 style="color:#00b4d8;">Items:</h5>
             <table class="table table-dark table-bordered">
                 <thead>
-                    <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Subtotal</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for item in order.items.all %}
@@ -38,10 +168,53 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+
+                <tfoot>
+                    <!-- Food Subtotal -->
+                    <tr>
+                        <td colspan="3" class="text-end">
+                            Food Subtotal
+                        </td>
+                        <td>৳{{ order.total_price }}</td>
+                    </tr>
+
+                    <!-- Delivery Charge -->
+                    <tr>
+                        <td colspan="3" class="text-end">
+                            <i class="bi bi-bicycle"
+                               style="color:#00b4d8;"></i>
+                            Delivery Charge
+                        </td>
+                        <td>৳{{ order.delivery_charge }}</td>
+                    </tr>
+
+                    <!-- Grand Total = food + delivery -->
+                    <tr style="background:#0d1b2a;">
+                        <td colspan="3" class="text-end">
+                            <strong style="color:#00b4d8;
+                                           font-size:1.1rem;">
+                                Grand Total
+                            </strong>
+                            <br>
+                            <small style="color:#aaa;">
+                                (food + delivery)
+                            </small>
+                        </td>
+                        <td>
+                            <strong style="color:#00b4d8;
+                                           font-size:1.2rem;">
+                                ৳{{ order.grand_total }}
+                            </strong>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
 
             <div class="d-flex gap-2 mt-3">
-                <a href="{% url 'orders:my_orders' %}" class="btn btn-primary">← My Orders</a>
+                <a href="{% url 'orders:my_orders' %}"
+                   class="btn btn-primary">
+                    ← My Orders
+                </a>
                 {% if order.status == 'PENDING' %}
                 <a href="{% url 'orders:cancel_order' order.id %}"
                    class="btn btn-danger"
@@ -50,6 +223,7 @@
                 </a>
                 {% endif %}
             </div>
+
         </div>
     </div>
 </div>
