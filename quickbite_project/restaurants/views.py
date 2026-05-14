@@ -1,14 +1,12 @@
 # restaurants/views.py
 
+from functools import wraps
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Restaurant, MenuItem
 from orders.models import Order
 
-
-
-# PUBLIC VIEWS (anyone can see)
 
 
 def restaurant_list(request):
@@ -45,7 +43,7 @@ def restaurant_detail(request, pk):
 
 
 def owner_required(view_func):
-    """Custom decorator to check if user is a restaurant owner"""
+    @wraps(view_func)
     @login_required
     def wrapper(request, *args, **kwargs):
         if not request.user.is_restaurant_owner:

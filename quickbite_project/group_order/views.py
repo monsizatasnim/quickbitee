@@ -7,7 +7,7 @@ from .models import GroupOrder, GroupOrderItem
 from restaurants.models import MenuItem, Restaurant
 from orders.models import Order, OrderItem
 from orders.views import calculate_delivery_charge
-
+from decimal import Decimal
 
 @login_required
 def group_list(request):
@@ -173,11 +173,14 @@ def group_detail(request, group_id):
         request.user.address or 'Dhaka',
         group.restaurant.address
     )
+
+    # ✅ Convert everything to Decimal to avoid the error
+    delivery_charge = Decimal(str(delivery_charge))
     delivery_per_person = round(delivery_charge / members_count, 2)
 
     # Per user bills
     user_bills = {}
-    total_group_bill = 0
+    total_group_bill = Decimal('0')
 
     for entry in group_items:
         username = entry.user.username
@@ -186,17 +189,17 @@ def group_detail(request, group_id):
 
         if username not in user_bills:
             user_bills[username] = {
-                'food': 0,
-                'delivery': float(delivery_per_person),
-                'total': 0
+                'food': Decimal('0'),
+                'delivery': delivery_per_person,
+                'total': Decimal('0')
             }
         user_bills[username]['food'] += subtotal
 
     # Calculate total per person (food + delivery share)
     for username in user_bills:
         user_bills[username]['total'] = (
-            user_bills[username]['food'] +
-            user_bills[username]['delivery']
+                user_bills[username]['food'] +
+                user_bills[username]['delivery']
         )
 
     total_group_bill += delivery_charge

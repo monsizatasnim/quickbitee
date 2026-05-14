@@ -9,7 +9,7 @@ class Restaurant(models.Model):
     )
     name = models.CharField(max_length=100)
     description = models.TextField()
-    image = models.ImageField(upload_to='restaurant_images/')
+    image = models.ImageField(upload_to='restaurant_images/', blank=True, null=True)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, blank=True, null=True)
     opening_time = models.TimeField(blank=True, null=True)

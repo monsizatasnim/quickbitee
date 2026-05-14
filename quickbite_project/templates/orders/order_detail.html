@@ -26,13 +26,15 @@
                         <div class="mx-auto rounded-circle d-flex
                         align-items-center justify-content-center"
                              style="width:46px; height:46px;
-                             background:{% if step in 'PENDING CONFIRMED PREPARING ON_THE_WAY DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
+                             color:{% if step == 'PENDING' or step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};
+
                             <i class="bi bi-receipt"
                                style="color:white;"></i>
                         </div>
                         <p class="mt-1 mb-0"
                            style="font-size:0.72rem;
-                           color:{% if step in 'PENDING CONFIRMED PREPARING ON_THE_WAY DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};"> Order Placed
+                           color:{% if step == 'PENDING' or step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};
+"> Order Placed
                         </p>
                     </div>
 

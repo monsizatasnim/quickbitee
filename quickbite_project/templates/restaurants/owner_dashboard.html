@@ -130,6 +130,9 @@
                 <option value="PENDING"
                         {% if order.status == 'PENDING' %}selected{% endif %}> 📋 Order Placed
                 </option>
+                <option value="CONFIRMED"
+                        {% if order.status == 'CONFIRMED' %}selected{% endif %}> ✅ Confirmed
+                </option>
                 <option value="PREPARING"
                         {% if order.status == 'PREPARING' %}selected{% endif %}> 👨‍🍳 Preparing
                 </option>
