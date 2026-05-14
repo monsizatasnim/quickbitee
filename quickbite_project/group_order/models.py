@@ -24,6 +24,13 @@ class GroupOrder(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    main_order = models.OneToOneField(
+        'orders.Order',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='group_order'
+    )
+
     def save(self, *args, **kwargs):
         if not self.invite_code:
             self.invite_code = str(uuid.uuid4())[:8].upper()
@@ -34,7 +41,6 @@ class GroupOrder(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class GroupOrderItem(models.Model):
     PAYMENT_CHOICES = [

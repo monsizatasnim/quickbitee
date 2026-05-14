@@ -19,14 +19,12 @@
                     </p>
                 </div>
                 <div class="text-center">
-                    {% with total=member_payments.count paid=member_payments.filter(is_paid=True).count %}
-                    <div style="font-size:2rem; font-weight:700;
-                                color:var(--copper-bright);">
-                        {{ member_payments.all|length }}
-                    </div>
-                    <small style="color:#a0a0a0;">members</small>
-                    {% endwith %}
-                </div>
+    <div style="font-size:2rem; font-weight:700;
+                color:var(--copper-bright);">
+        {{ total_members }}
+    </div>
+    <small style="color:#a0a0a0;">members</small>
+</div>
             </div>
         </div>
 
@@ -185,14 +183,51 @@
 
             <!-- Total summary -->
             <hr>
-            <div class="d-flex justify-content-between p-2">
-                <strong>Total Group Bill</strong>
-                <strong style="color:var(--copper-bright);">
-                    ৳{% with total=0 %}
-                        {{ member_payments.all|length }}
-                    {% endwith %}
-                </strong>
-            </div>
+
+<!-- Progress Bar -->
+{% if total_bill %}
+<div class="mb-3">
+    <div class="d-flex justify-content-between mb-1">
+        <small style="color:#a0a0a0;">Payment Progress</small>
+        <small style="color:#a0a0a0;">
+            {{ paid_count }}/{{ total_members }} paid
+        </small>
+    </div>
+    <div style="background:var(--teal-light);
+                border-radius:10px; height:10px; overflow:hidden;">
+        <div style="
+            width:{% widthratio total_paid total_bill 100 %}%;
+            background:var(--teal-accent);
+            height:100%;
+            border-radius:10px;
+            transition: width 0.5s ease;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Bill Breakdown -->
+<div class="d-flex justify-content-between p-2">
+    <span style="color:#a0a0a0;">Total Group Bill</span>
+    <span style="color:var(--copper-bright); font-weight:700;">
+        ৳{{ total_bill }}
+    </span>
+</div>
+
+<div class="d-flex justify-content-between p-2">
+    <span style="color:#80ffdb;">✅ Total Collected</span>
+    <span style="color:#80ffdb; font-weight:700;">
+        ৳{{ total_paid }}
+    </span>
+</div>
+
+<div class="d-flex justify-content-between p-2"
+     style="border-top:1px solid var(--teal-light); margin-top:5px;">
+    <span style="color:#e07a5f;">⏳ Still Remaining</span>
+    <span style="color:#e07a5f; font-weight:700;">
+        ৳{{ total_remaining }}
+    </span>
+</div>
         </div>
 
         <a href="{% url 'orders:my_orders' %}"

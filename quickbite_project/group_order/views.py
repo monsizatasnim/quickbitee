@@ -124,11 +124,28 @@ def group_detail(request, group_id):
                 messages.error(request, '❌ No items in the order!')
                 return redirect('group_order:group_detail', group_id=group.id)
 
+            # ✅ Check address exists before finalizing
+            creator_address = request.user.address
+            creator_phone = request.user.phone_number
+
+            if not creator_address:
+                messages.error(
+                    request,
+                    '❌ Please update your address in your profile before finalizing!'
+                )
+                return redirect('group_order:group_detail', group_id=group.id)
+
+            if not creator_phone:
+                messages.error(
+                    request,
+                    '❌ Please update your phone number in your profile before finalizing!'
+                )
+                return redirect('group_order:group_detail', group_id=group.id)
+
             members_list = list(group.members.all())
             total_members = len(members_list)
 
             # Calculate delivery
-            creator_address = request.user.address or 'Dhaka'
             delivery_charge, _ = calculate_delivery_charge(
                 creator_address,
                 group.restaurant.address
@@ -139,16 +156,21 @@ def group_detail(request, group_id):
             # Total food cost
             total_food = sum(e.get_subtotal() for e in group_items)
 
-            # Create ONE main order
+            # ✅ Get creator's actual payment method
+            creator_item = group_items.filter(user=request.user).first()
+            creator_payment = creator_item.payment_method if creator_item else 'COD'
+
+            # ✅ Create ONE main order with REAL data
             main_order = Order.objects.create(
                 user=request.user,
                 restaurant=group.restaurant,
                 total_price=total_food,
                 delivery_charge=delivery_charge,
-                payment_method='COD',
-                customer_phone=request.user.phone_number or 'N/A',
-                customer_address=request.user.address or 'N/A',
+                payment_method=creator_payment,  # ✅ Real payment method
+                customer_phone=creator_phone,  # ✅ Real phone
+                customer_address=creator_address,  # ✅ Real address
                 status='PENDING',
+                is_paid=False,
             )
 
             # Add all items to the order
@@ -164,10 +186,8 @@ def group_detail(request, group_id):
             for member in members_list:
                 member_items = group_items.filter(user=member)
                 member_food = sum(e.get_subtotal() for e in member_items)
-                member_payment = group_items.filter(
-                    user=member
-                ).first()
-                payment_method = member_payment.payment_method if member_payment else 'COD'
+                member_payment_item = group_items.filter(user=member).first()
+                payment_method = member_payment_item.payment_method if member_payment_item else 'COD'
 
                 GroupMemberPayment.objects.get_or_create(
                     group=group,
@@ -183,12 +203,12 @@ def group_detail(request, group_id):
 
             group_items.delete()
             group.is_active = False
+            group.main_order = main_order  # ✅ Link the order!
             group.save()
 
             messages.success(
                 request,
-                f'✅ Group order placed! '
-                f'Each member can now pay their share.'
+                '✅ Group order placed! Each member can now pay their share.'
             )
             return redirect(
                 'group_order:group_payment_summary',
@@ -242,7 +262,6 @@ def group_detail(request, group_id):
 
 @login_required
 def group_payment_summary(request, group_id):
-    #Shows payment status for all members after finalization
     group = get_object_or_404(GroupOrder, id=group_id)
 
     if request.user not in group.members.all():
@@ -251,13 +270,25 @@ def group_payment_summary(request, group_id):
     member_payments = GroupMemberPayment.objects.filter(group=group)
     my_payment = member_payments.filter(user=request.user).first()
 
+    total_members = member_payments.count()
+    paid_count = member_payments.filter(is_paid=True).count()
+    unpaid_count = member_payments.filter(is_paid=False).count()
+
+    total_bill = sum(p.total_amount for p in member_payments)
+    total_paid = sum(p.total_amount for p in member_payments if p.is_paid)
+    total_remaining = total_bill - total_paid  # ✅
+
     return render(request, 'group_order/group_payment_summary.html', {
         'group': group,
         'member_payments': member_payments,
         'my_payment': my_payment,
+        'total_members': total_members,
+        'paid_count': paid_count,
+        'unpaid_count': unpaid_count,
+        'total_bill': total_bill,
+        'total_paid': total_paid,        # ✅
+        'total_remaining': total_remaining,  # ✅
     })
-
-
 @login_required
 def group_pay(request, group_id):
     group = get_object_or_404(GroupOrder, id=group_id)
@@ -282,7 +313,6 @@ def group_pay(request, group_id):
 
 @login_required
 def group_pay_confirm(request, group_id):
-    """Confirm payment for a member"""
     group = get_object_or_404(GroupOrder, id=group_id)
     payment_record = get_object_or_404(
         GroupMemberPayment,
@@ -296,10 +326,29 @@ def group_pay_confirm(request, group_id):
         payment_record.paid_at = timezone.now()
         payment_record.save()
 
+        # ✅ Check if ALL members have paid now
+        all_payments = GroupMemberPayment.objects.filter(group=group)
+        all_paid = not all_payments.filter(is_paid=False).exists()
+
+        if all_paid and group.main_order:
+            # ✅ Mark the main Order as fully paid!
+            group.main_order.is_paid = True
+            group.main_order.save()
+
+            # ✅ Notify restaurant owner
+            from orders.models import Notification
+            if group.main_order.restaurant and group.main_order.restaurant.owner:
+                Notification.objects.create(
+                    user=group.main_order.restaurant.owner,
+                    message=(
+                        f'💰 Group order #{group.main_order.id} '
+                        f'"{group.name}" has been fully paid!'
+                    )
+                )
+
         messages.success(
             request,
-            f'✅ Payment confirmed! '
-            f'Transaction ID: {payment_record.transaction_id}'
+            f'✅ Payment confirmed! Transaction ID: {payment_record.transaction_id}'
         )
 
     return redirect(
