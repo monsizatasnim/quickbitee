@@ -8,84 +8,110 @@
         <div class="card p-4">
             <h3 class="section-title">👥 Create Group Order</h3>
 
-            <form method="post">
+            <form method="post" id="createGroupForm">
                 {% csrf_token %}
 
                 <div class="mb-3">
                     <label class="form-label">Group Name</label>
-                    <input type="text" name="name"
+                    <input type="text"
+                           name="name"
                            class="form-control"
                            placeholder="e.g. Friday Office Lunch"
                            required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">
-                        Choose Restaurant
-                    </label>
+                    <label class="form-label">Choose Restaurant</label>
 
-                    <!-- Search box -->
+                    <!-- Search Box -->
                     <input type="text"
                            id="restaurantSearch"
                            class="form-control mb-2"
-                           placeholder="🔍 Search restaurant...">
+                           placeholder="Search restaurant..."
+                           autocomplete="off">
 
-                    <!-- Hidden input to store selected restaurant -->
+                    <!-- Hidden input -->
                     <input type="hidden"
                            name="restaurant_id"
-                           id="selectedRestaurantId"
-                           required>
+                           id="selectedRestaurantId">
 
-                    <!-- Restaurant list -->
+                    <!-- Restaurant List -->
                     <div id="restaurantList"
                          style="max-height:250px;
                                 overflow-y:auto;
                                 border:1px solid var(--teal-light);
-                                border-radius:8px;">
+                                border-radius:8px;
+                                background:var(--teal-dark);">
 
                         {% for restaurant in restaurants %}
-                        <div class="restaurant-option p-3 d-flex
-                                    align-items-center gap-3"
-                             style="cursor:pointer;
-                                    border-bottom:1px solid var(--teal-light);"
+                        <div class="restaurant-option"
                              data-id="{{ restaurant.id }}"
                              data-name="{{ restaurant.name }}"
-                             onclick="selectRestaurant(
-                                 '{{ restaurant.id }}',
-                                 '{{ restaurant.name }}'
-                             )">
+                             onclick="selectRestaurant('{{ restaurant.id }}', '{{ restaurant.name }}')"
+                             style="padding:12px;
+                                    display:flex;
+                                    align-items:center;
+                                    gap:12px;
+                                    cursor:pointer;
+                                    border-bottom:1px solid var(--teal-light);">
+
                             {% if restaurant.image %}
                             <img src="{{ restaurant.image.url }}"
-                                 style="width:45px; height:45px;
+                                 style="width:45px;
+                                        height:45px;
                                         object-fit:cover;
-                                        border-radius:8px;">
+                                        border-radius:8px;
+                                        flex-shrink:0;">
                             {% else %}
-                            <div style="width:45px; height:45px;
+                            <div style="width:45px;
+                                        height:45px;
                                         background:var(--teal-light);
                                         border-radius:8px;
                                         display:flex;
                                         align-items:center;
-                                        justify-content:center;">
+                                        justify-content:center;
+                                        flex-shrink:0;">
                                 <i class="bi bi-shop"
                                    style="color:var(--copper-bright);"></i>
                             </div>
                             {% endif %}
+
                             <div>
-                                <strong>{{ restaurant.name }}</strong>
+                                <strong style="color:var(--grey-white);">
+                                    {{ restaurant.name }}
+                                </strong>
                                 <br>
                                 <small style="color:#a0a0a0;">
                                     {{ restaurant.address }}
                                 </small>
                             </div>
                         </div>
+                        {% empty %}
+                        <div style="padding:20px; text-align:center;
+                                    color:#a0a0a0;">
+                            No restaurants available.
+                        </div>
                         {% endfor %}
 
                     </div>
 
-                    <!-- Show selected restaurant -->
-                    <div id="selectedDisplay"
-                         class="mt-2 p-2"
+                    <!-- No results message -->
+                    <div id="noResults"
                          style="display:none;
+                                padding:15px;
+                                text-align:center;
+                                color:#a0a0a0;
+                                border:1px solid var(--teal-light);
+                                border-radius:8px;
+                                margin-top:4px;">
+                        No restaurants found.
+                    </div>
+
+                    <!-- Selected restaurant display -->
+                    <div id="selectedDisplay"
+                         style="display:none;
+                                margin-top:8px;
+                                padding:10px;
                                 background:var(--teal-dark);
                                 border-radius:8px;
                                 border:1px solid var(--copper);">
@@ -96,42 +122,82 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-success w-100"
-                        id="submitBtn" disabled>
+                <button type="submit"
+                        id="submitBtn"
+                        class="btn btn-success w-100"
+                        disabled>
                     ✅ Create Group
                 </button>
+
                 <a href="{% url 'group_order:group_list' %}"
                    class="btn btn-primary w-100 mt-2">
                     Cancel
                 </a>
+
             </form>
         </div>
     </div>
 </div>
 
-<script>
-function selectRestaurant(id, name) {
-    document.getElementById('selectedRestaurantId').value = id;
-    document.getElementById('selectedName').textContent = name;
-    document.getElementById('selectedDisplay').style.display = 'block';
-    document.getElementById('submitBtn').disabled = false;
+<!-- Put script at very bottom, BEFORE endblock -->
+<script type="text/javascript">
 
-    // Highlight selected
-    document.querySelectorAll('.restaurant-option').forEach(function(opt) {
-        opt.style.background = '';
-    });
-    document.querySelector('[data-id="' + id + '"]').style.background =
-        'rgba(184, 115, 51, 0.15)';
-}
+    // Select a restaurant
+    function selectRestaurant(id, name) {
+        document.getElementById('selectedRestaurantId').value = id;
+        document.getElementById('selectedName').textContent = name;
+        document.getElementById('selectedDisplay').style.display = 'block';
+        document.getElementById('submitBtn').disabled = false;
 
-// Search filter
-document.getElementById('restaurantSearch').addEventListener('input', function() {
-    let val = this.value.toLowerCase();
-    document.querySelectorAll('.restaurant-option').forEach(function(opt) {
-        let name = opt.getAttribute('data-name').toLowerCase();
-        opt.style.display = name.includes(val) ? 'flex' : 'none';
+        // Reset all backgrounds
+        var allOptions = document.querySelectorAll('.restaurant-option');
+        for (var i = 0; i < allOptions.length; i++) {
+            allOptions[i].style.background = '';
+        }
+
+        // Highlight the selected one
+        var selected = document.querySelector('[data-id="' + id + '"]');
+        if (selected) {
+            selected.style.background = 'rgba(184, 115, 51, 0.2)';
+        }
+    }
+
+    // Search function - runs after page loads
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var searchBox = document.getElementById('restaurantSearch');
+        var noResults = document.getElementById('noResults');
+
+        if (searchBox) {
+            searchBox.addEventListener('keyup', function() {
+
+                var searchText = this.value.toLowerCase().trim();
+                var options = document.querySelectorAll('.restaurant-option');
+                var visibleCount = 0;
+
+                for (var i = 0; i < options.length; i++) {
+                    var name = options[i].getAttribute('data-name').toLowerCase();
+
+                    if (name.indexOf(searchText) !== -1) {
+                        options[i].style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        options[i].style.display = 'none';
+                    }
+                }
+
+                // Show no results message
+                if (visibleCount === 0 && searchText !== '') {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+
+            });
+        }
+
     });
-});
+
 </script>
 
 {% endblock %}

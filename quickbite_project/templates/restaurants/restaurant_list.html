@@ -14,15 +14,7 @@
         Beat the Rush, Order Smart
     </p>
 
-    {% if not user.is_authenticated %}
-    <!-- Only show Sign Up button, no login (login is in navbar) -->
-    <div class="mt-4">
-        <a href="{% url 'accounts:register' %}"
-           class="btn btn-success btn-lg">
-            <i class="bi bi-person-plus"></i> Sign Up Free
-        </a>
-    </div>
-    {% endif %}
+
 </div>
 
 <!-- Search Bar -->
