@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}Group Payment Summary - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <div class="card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="section-title mb-1">
+                        👥 {{ group.name }}
+                    </h3>
+                    <p style="color:#a0a0a0;" class="mb-0">
+                        <i class="bi bi-shop"
+                           style="color:var(--copper-bright);"></i>
+                        {{ group.restaurant.name }}
+                    </p>
+                </div>
+                <div class="text-center">
+                    {% with total=member_payments.count paid=member_payments.filter(is_paid=True).count %}
+                    <div style="font-size:2rem; font-weight:700;
+                                color:var(--copper-bright);">
+                        {{ member_payments.all|length }}
+                    </div>
+                    <small style="color:#a0a0a0;">members</small>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        <!-- My Payment Status -->
+        {% if my_payment %}
+        <div class="card p-4 mb-4"
+             style="border:2px solid
+             {% if my_payment.is_paid %}var(--teal-accent)
+             {% else %}var(--copper){% endif %};">
+
+            <h5 style="color:var(--copper-bright);">
+                💳 Your Payment
+            </h5>
+            <hr>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Food:</strong>
+                        ৳{{ my_payment.food_amount }}
+                    </p>
+                    <p><strong>Delivery Share:</strong>
+                        ৳{{ my_payment.delivery_share }}
+                    </p>
+                    <p><strong>Total to Pay:</strong>
+                        <span style="color:var(--copper-bright);
+                                     font-size:1.2rem; font-weight:700;">
+                            ৳{{ my_payment.total_amount }}
+                        </span>
+                    </p>
+                    <p><strong>Payment Method:</strong>
+                        {{ my_payment.get_payment_method_display }}
+                    </p>
+                </div>
+                <div class="col-md-6 d-flex align-items-center
+                            justify-content-center">
+                    {% if my_payment.is_paid %}
+                        <div class="text-center">
+                            <div style="width:80px; height:80px;
+                                        background:var(--teal-accent);
+                                        border-radius:50%;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        margin:0 auto 10px;">
+                                <i class="bi bi-check-lg"
+                                   style="font-size:2.5rem;
+                                          color:white;"></i>
+                            </div>
+                            <strong style="color:#80ffdb;">PAID ✅</strong>
+                            <br>
+                            <small style="color:#a0a0a0;">
+                                Txn: {{ my_payment.transaction_id }}
+                            </small>
+                        </div>
+                    {% else %}
+                        {% if my_payment.payment_method == 'COD' %}
+                        <div class="text-center">
+                            <div style="width:80px; height:80px;
+                                        background:var(--teal-light);
+                                        border-radius:50%;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        margin:0 auto 10px;">
+                                <i class="bi bi-cash-coin"
+                                   style="font-size:2rem;
+                                          color:var(--copper-bright);"></i>
+                            </div>
+                            <strong style="color:var(--copper-bright);">
+                                Pay on Delivery
+                            </strong>
+                            <br>
+                            <small style="color:#a0a0a0;">
+                                No action needed
+                            </small>
+                        </div>
+                        {% else %}
+                        <a href="{% url 'group_order:group_pay' group.id %}"
+                           class="btn btn-success btn-lg px-4">
+                            <i class="bi bi-credit-card"></i>
+                            Pay Now
+                            <br>
+                            <small>৳{{ my_payment.total_amount }}</small>
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- All Members Payment Status -->
+        <div class="card p-4">
+            <h5 style="color:var(--copper-bright);">
+                👥 Group Payment Status
+            </h5>
+            <hr>
+
+            {% for payment in member_payments %}
+            <div class="d-flex justify-content-between
+                        align-items-center mb-3 p-3"
+                 style="background:var(--teal-dark);
+                        border-radius:10px;
+                        border-left:4px solid
+                        {% if payment.is_paid %}var(--teal-accent)
+                        {% elif payment.payment_method == 'COD' %}var(--copper)
+                        {% else %}#e63946{% endif %};">
+
+                <div>
+                    <strong style="color:var(--grey-white);">
+                        {% if payment.user == request.user %}
+                            You
+                        {% else %}
+                            {{ payment.user.username }}
+                        {% endif %}
+                    </strong>
+                    <br>
+                    <small style="color:#a0a0a0;">
+                        {{ payment.get_payment_method_display }}
+                    </small>
+                    <br>
+                    <small style="color:#a0a0a0;">
+                        Food: ৳{{ payment.food_amount }} +
+                        Delivery: ৳{{ payment.delivery_share }}
+                    </small>
+                </div>
+
+                <div class="text-end">
+                    <strong style="color:var(--copper-bright);
+                                   font-size:1.1rem;">
+                        ৳{{ payment.total_amount }}
+                    </strong>
+                    <br>
+                    {% if payment.is_paid %}
+                        <span style="color:#80ffdb; font-size:0.85rem;">
+                            ✅ PAID
+                        </span>
+                        <br>
+                        <small style="color:#a0a0a0; font-size:0.75rem;">
+                            {{ payment.transaction_id }}
+                        </small>
+                    {% elif payment.payment_method == 'COD' %}
+                        <span style="color:var(--copper-bright);
+                                     font-size:0.85rem;">
+                            💵 Cash on Delivery
+                        </span>
+                    {% else %}
+                        <span style="color:#e07a5f; font-size:0.85rem;">
+                            ⏳ Pending
+                        </span>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+            <!-- Total summary -->
+            <hr>
+            <div class="d-flex justify-content-between p-2">
+                <strong>Total Group Bill</strong>
+                <strong style="color:var(--copper-bright);">
+                    ৳{% with total=0 %}
+                        {{ member_payments.all|length }}
+                    {% endwith %}
+                </strong>
+            </div>
+        </div>
+
+        <a href="{% url 'orders:my_orders' %}"
+           class="btn btn-primary mt-3">
+            📦 View My Orders
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}

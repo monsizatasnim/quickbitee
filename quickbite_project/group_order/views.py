@@ -1,13 +1,14 @@
-# group_order/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import GroupOrder, GroupOrderItem
+from decimal import Decimal
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from .models import GroupOrder, GroupOrderItem, GroupMemberPayment
 from restaurants.models import MenuItem, Restaurant
 from orders.models import Order, OrderItem
 from orders.views import calculate_delivery_charge
-from decimal import Decimal
+
 
 @login_required
 def group_list(request):
@@ -85,14 +86,17 @@ def group_detail(request, group_id):
     my_item = group_items.filter(user=request.user).first()
     my_payment = my_item.payment_method if my_item else 'COD'
 
+    # Check if member already has a payment record
+    my_payment_record = GroupMemberPayment.objects.filter(
+        group=group,
+        user=request.user
+    ).first()
+
     # Handle SET PAYMENT METHOD
     if request.method == 'POST' and 'set_payment' in request.POST:
         payment = request.POST.get('payment_method', 'COD')
-        # Update all items by this user in this group
-        group_items.filter(user=request.user).update(
-            payment_method=payment
-        )
-        messages.success(request, '✅ Payment method updated!')
+        group_items.filter(user=request.user).update(payment_method=payment)
+        messages.success(request, '✅ Payment method saved!')
         return redirect('group_order:group_detail', group_id=group.id)
 
     # Handle ADD ITEM
@@ -129,12 +133,13 @@ def group_detail(request, group_id):
                 creator_address,
                 group.restaurant.address
             )
+            delivery_charge = Decimal(str(delivery_charge))
             delivery_per_person = round(delivery_charge / total_members, 2)
 
             # Total food cost
             total_food = sum(e.get_subtotal() for e in group_items)
 
-            # Create ONE order
+            # Create ONE main order
             main_order = Order.objects.create(
                 user=request.user,
                 restaurant=group.restaurant,
@@ -146,13 +151,34 @@ def group_detail(request, group_id):
                 status='PENDING',
             )
 
-            # Add all items to one order
+            # Add all items to the order
             for entry in group_items:
                 OrderItem.objects.create(
                     order=main_order,
                     menu_item=entry.menu_item,
                     quantity=entry.quantity,
                     price=entry.menu_item.price,
+                )
+
+            # Create payment records for each member
+            for member in members_list:
+                member_items = group_items.filter(user=member)
+                member_food = sum(e.get_subtotal() for e in member_items)
+                member_payment = group_items.filter(
+                    user=member
+                ).first()
+                payment_method = member_payment.payment_method if member_payment else 'COD'
+
+                GroupMemberPayment.objects.get_or_create(
+                    group=group,
+                    user=member,
+                    defaults={
+                        'food_amount': member_food,
+                        'delivery_share': delivery_per_person,
+                        'total_amount': member_food + delivery_per_person,
+                        'payment_method': payment_method,
+                        'is_paid': False,
+                    }
                 )
 
             group_items.delete()
@@ -162,23 +188,22 @@ def group_detail(request, group_id):
             messages.success(
                 request,
                 f'✅ Group order placed! '
-                f'Delivery ৳{delivery_charge} split: '
-                f'৳{delivery_per_person} each.'
+                f'Each member can now pay their share.'
             )
-            return redirect('orders:order_detail', order_id=main_order.id)
+            return redirect(
+                'group_order:group_payment_summary',
+                group_id=group.id
+            )
 
-    # BILL CALCULATION
+    # Bill calculation
     members_count = group.get_total_members() or 1
     delivery_charge, _ = calculate_delivery_charge(
         request.user.address or 'Dhaka',
         group.restaurant.address
     )
-
-    # ✅ Convert everything to Decimal to avoid the error
     delivery_charge = Decimal(str(delivery_charge))
     delivery_per_person = round(delivery_charge / members_count, 2)
 
-    # Per user bills
     user_bills = {}
     total_group_bill = Decimal('0')
 
@@ -195,11 +220,10 @@ def group_detail(request, group_id):
             }
         user_bills[username]['food'] += subtotal
 
-    # Calculate total per person (food + delivery share)
     for username in user_bills:
         user_bills[username]['total'] = (
-                user_bills[username]['food'] +
-                user_bills[username]['delivery']
+            user_bills[username]['food'] +
+            user_bills[username]['delivery']
         )
 
     total_group_bill += delivery_charge
@@ -212,7 +236,76 @@ def group_detail(request, group_id):
         'total_group_bill': total_group_bill,
         'delivery_per_person': delivery_per_person,
         'my_payment': my_payment,
+        'my_payment_record': my_payment_record,
     })
+
+
+@login_required
+def group_payment_summary(request, group_id):
+    #Shows payment status for all members after finalization
+    group = get_object_or_404(GroupOrder, id=group_id)
+
+    if request.user not in group.members.all():
+        return redirect('group_order:group_list')
+
+    member_payments = GroupMemberPayment.objects.filter(group=group)
+    my_payment = member_payments.filter(user=request.user).first()
+
+    return render(request, 'group_order/group_payment_summary.html', {
+        'group': group,
+        'member_payments': member_payments,
+        'my_payment': my_payment,
+    })
+
+
+@login_required
+def group_pay(request, group_id):
+    group = get_object_or_404(GroupOrder, id=group_id)
+    payment_record = get_object_or_404(
+        GroupMemberPayment,
+        group=group,
+        user=request.user
+    )
+
+    if payment_record.is_paid:
+        messages.info(request, '✅ You have already paid!')
+        return redirect(
+            'group_order:group_payment_summary',
+            group_id=group.id
+        )
+
+    return render(request, 'group_order/group_pay.html', {
+        'group': group,
+        'payment_record': payment_record,
+    })
+
+
+@login_required
+def group_pay_confirm(request, group_id):
+    """Confirm payment for a member"""
+    group = get_object_or_404(GroupOrder, id=group_id)
+    payment_record = get_object_or_404(
+        GroupMemberPayment,
+        group=group,
+        user=request.user
+    )
+
+    if not payment_record.is_paid:
+        payment_record.is_paid = True
+        payment_record.transaction_id = get_random_string(12).upper()
+        payment_record.paid_at = timezone.now()
+        payment_record.save()
+
+        messages.success(
+            request,
+            f'✅ Payment confirmed! '
+            f'Transaction ID: {payment_record.transaction_id}'
+        )
+
+    return redirect(
+        'group_order:group_payment_summary',
+        group_id=group.id
+    )
 
 
 @login_required

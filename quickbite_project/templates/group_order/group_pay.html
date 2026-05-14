@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Pay Your Share - QuickBite{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-0 overflow-hidden">
+
+            <div class="p-4 text-center"
+                 style="background:linear-gradient(
+                            135deg,
+                            var(--teal-accent),
+                            var(--teal-dark)
+                        );">
+                {% if payment_record.payment_method == 'BKASH' %}
+                    <div style="width:80px; height:80px;
+                                background:#e2136e;
+                                border-radius:50%;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                margin:0 auto 15px;">
+                        <strong style="color:white; font-size:1.1rem;">
+                            bKash
+                        </strong>
+                    </div>
+                    <h3 style="color:white;">bKash Payment</h3>
+                {% else %}
+                    <div style="width:80px; height:80px;
+                                background:#f6821f;
+                                border-radius:50%;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                margin:0 auto 15px;">
+                        <strong style="color:white; font-size:1.1rem;">
+                            Nagad
+                        </strong>
+                    </div>
+                    <h3 style="color:white;">Nagad Payment</h3>
+                {% endif %}
+                <p style="color:rgba(255,255,255,0.8);">
+                    {{ group.name }} — Your Share
+                </p>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="p-4">
+
+                <!-- Amount -->
+                <div class="text-center mb-4">
+                    <p style="color:#a0a0a0;">Amount to Pay</p>
+                    <h1 style="color:var(--copper-bright);
+                               font-size:3rem; font-weight:700;">
+                        ৳{{ payment_record.total_amount }}
+                    </h1>
+                    <small style="color:#a0a0a0;">
+                        Food: ৳{{ payment_record.food_amount }} +
+                        Delivery: ৳{{ payment_record.delivery_share }}
+                    </small>
+                </div>
+
+                <!-- Send To -->
+                <div class="text-center p-3 mb-4"
+                     style="background:var(--teal-dark);
+                            border-radius:12px;
+                            border:1px solid var(--copper);">
+                    <p style="color:#a0a0a0; margin-bottom:5px;">
+                        Send to this number:
+                    </p>
+                    {% if payment_record.payment_method == 'BKASH' %}
+                    <h2 style="color:#e2136e;
+                               letter-spacing:4px;
+                               font-weight:700;">
+                        01712-345678
+                    </h2>
+                    <small style="color:#a0a0a0;">bKash (Personal)</small>
+                    {% else %}
+                    <h2 style="color:#f6821f;
+                               letter-spacing:4px;
+                               font-weight:700;">
+                        01812-345678
+                    </h2>
+                    <small style="color:#a0a0a0;">Nagad (Personal)</small>
+                    {% endif %}
+                </div>
+
+                <!-- Instructions -->
+                <div class="p-3 mb-4"
+                     style="background:var(--teal-dark);
+                            border-radius:8px;
+                            border-left:3px solid var(--copper-bright);">
+                    <p class="mb-1" style="color:var(--copper-bright);">
+                        <strong>Instructions:</strong>
+                    </p>
+                    <ol style="color:#a0a0a0; margin-bottom:0;
+                               padding-left:20px;">
+                        <li>Open your
+                            {% if payment_record.payment_method == 'BKASH' %}
+                            bKash
+                            {% else %}
+                            Nagad
+                            {% endif %}
+                            app
+                        </li>
+                        <li>Send
+                            <strong style="color:var(--copper-bright);">
+                                ৳{{ payment_record.total_amount }}
+                            </strong>
+                            to the number above
+                        </li>
+                        <li>Click "I Have Paid" below</li>
+                    </ol>
+                </div>
+
+                <!-- This is demo notice -->
+                <div class="text-center p-2 mb-4"
+                     style="background:rgba(184,115,51,0.1);
+                            border-radius:8px;">
+                    <small style="color:var(--copper);">
+                        ⚠️ This is a demo payment system.
+                        No real transaction required.
+                    </small>
+                </div>
+
+                <!-- Confirm Button -->
+                <a href="{% url 'group_order:group_pay_confirm' group.id %}"
+                   class="btn btn-success w-100 py-3"
+                   style="font-size:1.1rem;"
+                   onclick="return confirm(
+                       'Confirm payment of ৳{{ payment_record.total_amount }}?'
+                   )">
+                    ✅ I Have Sent the Payment
+                </a>
+
+                <a href="{% url 'group_order:group_payment_summary' group.id %}"
+                   class="btn btn-primary w-100 mt-2">
+                    ← Back to Summary
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
