@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['quickbitee-production.up.railway.app',
     'localhost',
     '127.0.0.1',"*",]
-
+CSRF_TRUSTED_ORIGINS = ['https://quickbitee-production.up.railway.app']
 
 # Application definition
 
