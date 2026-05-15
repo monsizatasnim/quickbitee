@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['quickbitee-production.up.railway.app',
     'localhost',
     '127.0.0.1',"*",]
-CSRF_TRUSTED_ORIGINS = ['https://quickbitee-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://quickbitee-production.up.railway.app','https://*.up.railway.app']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
