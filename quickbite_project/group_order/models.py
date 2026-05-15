@@ -11,7 +11,7 @@ class GroupOrder(models.Model):
         Restaurant, on_delete=models.CASCADE,
         null=True, blank=True
     )
-    created_by = models.ForeignKey(
+    created_by =  models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='created_groups'
@@ -33,6 +33,7 @@ class GroupOrder(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.invite_code:
+
             self.invite_code = str(uuid.uuid4())[:8].upper()
         super().save(*args, **kwargs)
 

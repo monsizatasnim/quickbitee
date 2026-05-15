@@ -3,7 +3,7 @@ from .models import Order, OrderItem
 
 
 class OrderItemInline(admin.TabularInline):
-    model = OrderItem
+    model  = OrderItem
     extra = 0
     readonly_fields = ('menu_item', 'quantity', 'price')
 
@@ -17,5 +17,5 @@ class OrderAdmin(admin.ModelAdmin):
         'created_at'
     )
     list_filter = ('status', 'payment_method', 'is_paid', 'restaurant')
-    search_fields = ('user__username', 'restaurant__name')
+    search_fields = ('user__username',   'restaurant__name')
     inlines = [OrderItemInline]

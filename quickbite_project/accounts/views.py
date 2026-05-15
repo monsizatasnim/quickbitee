@@ -10,7 +10,7 @@ from .forms import (
 
 
 def register_view(request):
-    """Customer registration"""
+    #Customer registration
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -31,7 +31,7 @@ def register_view(request):
 
 
 def restaurant_register_view(request):
-    """Restaurant owner registration"""
+    #Restaurant owner registration
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -41,10 +41,10 @@ def restaurant_register_view(request):
             request.FILES
         )
         if form.is_valid():
-            # Save the user
+
             user = form.save()
 
-            # Create the restaurant
+
             from restaurants.models import Restaurant
             Restaurant.objects.create(
                 owner=user,

@@ -8,7 +8,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),
     path('restaurants/', include('restaurants.urls')),
-    path('groups/', include('group_order.urls')),   # ✅ ADD THIS
+    path('groups/', include('group_order.urls')),
     path('', restaurant_views.restaurant_list, name='home'),
 ]
 if settings.DEBUG:

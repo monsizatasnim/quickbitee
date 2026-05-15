@@ -19,5 +19,5 @@ class User(AbstractUser):
         return self.username
 
     def has_complete_profile(self):
-        """Check if customer has filled required info"""
+        #Check if customer has filled required info
         return bool(self.phone_number and self.address)

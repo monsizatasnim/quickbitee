@@ -23,7 +23,7 @@ def calculate_delivery_charge(customer_address, restaurant_address):
     restaurant_coords = get_coordinates(restaurant_address)
 
     if customer_coords and restaurant_coords:
-        # Get distance in KM
+        # Get distance in km
         distance_km = geodesic(restaurant_coords, customer_coords).km
 
         # Charge based on distance
@@ -53,7 +53,7 @@ def add_to_cart(request, item_id):
         cart = {}
         messages.warning(request, '⚠️ Your cart was cleared because you switched restaurants.')
 
-    # ✅ This correctly increases quantity instead of adding duplicate
+    # This correctly increases quantity instead of adding duplicate
     if str(item_id) in cart:
         cart[str(item_id)]['quantity'] += 1
     else:
@@ -235,7 +235,7 @@ def order_detail(request, order_id):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    # ✅ Can only cancel if PENDING - not if already PREPARING or beyond
+    #  Can only cancel if pending - not if already  preparing or beyond
     if order.status == 'PENDING':
         order.status = 'CANCELED'
         order.save()

@@ -16,7 +16,7 @@ def group_list(request):
         members=request.user,
         is_active=True
     )
-    # ✅ Show finalized groups too
+    # Show finalized groups too
     my_finalized_groups = GroupOrder.objects.filter(
         members=request.user,
         is_active=False
@@ -83,7 +83,7 @@ def group_detail(request, group_id):
         messages.error(request, '❌ You are not a member!')
         return redirect('group_order:group_list')
 
-    # ✅ If group is finalized, redirect to payment summary
+    #  If group is finalized, redirect to payment summary
     if not group.is_active:
         return redirect(
             'group_order:group_payment_summary', group_id=group.id
@@ -95,7 +95,7 @@ def group_detail(request, group_id):
     )
     group_items = GroupOrderItem.objects.filter(group=group)
 
-    # ✅ Get payment preference from items or session
+    # Get payment preference from items or session
     my_item = group_items.filter(user=request.user).first()
     if my_item:
         my_payment = my_item.payment_method
@@ -109,7 +109,7 @@ def group_detail(request, group_id):
         user=request.user
     ).first()
 
-    # ✅ Handle UPDATE PROFILE (address/phone)
+    #  Handle update profile (address/phone)
     if request.method == 'POST' and 'update_profile' in request.POST:
         phone = request.POST.get('phone', '').strip()
         address = request.POST.get('address', '').strip()
@@ -122,7 +122,7 @@ def group_detail(request, group_id):
             messages.error(request, '❌ Phone and address are required!')
         return redirect('group_order:group_detail', group_id=group.id)
 
-    # ✅ Handle SET PAYMENT METHOD
+    #  Handle  set payment method
     if request.method == 'POST' and 'set_payment' in request.POST:
         payment = request.POST.get('payment_method', 'COD')
 
@@ -151,7 +151,8 @@ def group_detail(request, group_id):
             )
         return redirect('group_order:group_detail', group_id=group.id)
 
-    # ✅ Handle ADD ITEM
+    # Handle add item
+
     if request.method == 'POST' and 'item_id' in request.POST:
         item_id = request.POST.get('item_id')
         menu_item = get_object_or_404(MenuItem, id=item_id)
@@ -177,7 +178,7 @@ def group_detail(request, group_id):
         messages.success(request, f'✅ {menu_item.name} added!')
         return redirect('group_order:group_detail', group_id=group.id)
 
-    # ✅ Handle FINALIZE
+    # Handle  finilize
     if request.method == 'POST' and 'finalize_group' in request.POST:
         if request.user == group.created_by:
             if not group_items.exists():
@@ -239,7 +240,7 @@ def group_detail(request, group_id):
                     price=entry.menu_item.price,
                 )
 
-            # ✅ Create payment records
+            #  Create payment records
             for member in members_list:
                 member_items = group_items.filter(user=member)
                 member_food = sum(
@@ -268,7 +269,7 @@ def group_detail(request, group_id):
             group.main_order = main_order
             group.save()
 
-            # ✅ Notify restaurant
+            # Notify restaurant
             if group.restaurant and group.restaurant.owner:
                 all_payments = GroupMemberPayment.objects.filter(
                     group=group
@@ -292,7 +293,7 @@ def group_detail(request, group_id):
                     )
                 )
 
-            # ✅ Notify all OTHER members with PAY LINK
+            #  Notify all other members with pay link
             for member in members_list:
                 if member != request.user:
                     member_pay = GroupMemberPayment.objects.filter(
@@ -514,7 +515,7 @@ def group_pay_confirm(request, group_id):
                 group.main_order.is_paid = True
                 group.main_order.save()
 
-            # ✅ Notify restaurant
+            #  Notify restaurant
             if (group.main_order.restaurant
                     and group.main_order.restaurant.owner):
                 Notification.objects.create(
@@ -532,7 +533,7 @@ def group_pay_confirm(request, group_id):
                     )
                 )
 
-            # ✅ Notify the user
+            #  Notify the user
             Notification.objects.create(
                 user=request.user,
                 message=(
@@ -543,7 +544,7 @@ def group_pay_confirm(request, group_id):
                 )
             )
 
-            # ✅ Notify group creator
+            #  Notify group creator
             if request.user != group.created_by:
                 Notification.objects.create(
                     user=group.created_by,

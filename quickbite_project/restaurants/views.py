@@ -57,7 +57,7 @@ def owner_dashboard(request):
     # Get all orders
     orders = Order.objects.filter(restaurant=restaurant).order_by('-created_at')
 
-    # ✅ Calculate payment breakdown for each order
+    #  Calculate payment breakdown for each order
     for order in orders:
         try:
             # Check if this order belongs to a group
