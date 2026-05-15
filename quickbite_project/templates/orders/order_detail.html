@@ -8,109 +8,142 @@
         <div class="card p-4">
             <h3 class="section-title">📦 Order #{{ order.id }}</h3>
 
-            <!-- ORDER TRACKER - 5 Steps -->
-            <div class="card p-4 mb-4" style="background:var(--teal-dark);">
+            <!-- ORDER TRACKER -->
+            <div class="card p-4 mb-4"
+                 style="background:var(--teal-dark);">
                 <h5 style="color:var(--copper-bright);" class="mb-4">
                     🚀 Order Status
                 </h5>
-                <div class="d-flex justify-content-between align-items-center position-relative">
 
-        <!-- Progress Line -->
-                    <div style="position:absolute; top:25px; left:5%; width:90%; height:3px;
-                    background:var(--teal-light); z-index:0;">
+                {% if order.status == 'CANCELED' %}
+                <div class="alert alert-danger text-center mb-0">
+                    ❌ This order was canceled.
+                </div>
 
+                {% else %}
+                <div class="d-flex justify-content-between
+                            align-items-center position-relative">
+
+                    <!-- Progress Line Background -->
+                    <div style="position:absolute; top:23px;
+                                left:5%; width:90%; height:3px;
+                                background:var(--teal-light);
+                                z-index:0;">
                     </div>
-                    {% with step=order.status %}
+
+                    <!-- Progress Line Fill -->
+                    <div style="position:absolute; top:23px;
+                                left:5%; height:3px;
+                                background:var(--teal-accent);
+                                z-index:0;
+                                width:
+                                {% if order.status == 'PENDING' %}0%
+                                {% elif order.status == 'CONFIRMED' %}25%
+                                {% elif order.status == 'PREPARING' %}50%
+                                {% elif order.status == 'ON_THE_WAY' %}75%
+                                {% elif order.status == 'DELIVERED' %}90%
+                                {% else %}0%{% endif %};">
+                    </div>
+
                     <!-- Step 1: Order Placed -->
                     <div class="text-center" style="z-index:1; flex:1;">
                         <div class="mx-auto rounded-circle d-flex
-                        align-items-center justify-content-center"
+                                    align-items-center
+                                    justify-content-center"
                              style="width:46px; height:46px;
-                             color:{% if step == 'PENDING' or step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};
-
+                                    background:var(--teal-accent);">
                             <i class="bi bi-receipt"
                                style="color:white;"></i>
                         </div>
                         <p class="mt-1 mb-0"
-                           style="font-size:0.72rem;
-                           color:{% if step == 'PENDING' or step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};
-"> Order Placed
+                           style="font-size:0.72rem; color:#80ffdb;">
+                            Order Placed
                         </p>
                     </div>
 
-        <!-- Step 2: Confirmed -->
-        <div class="text-center" style="z-index:1; flex:1;">
-            <div class="mx-auto rounded-circle d-flex
-                        align-items-center justify-content-center"
-                 style="width:46px; height:46px;
-                        background:{% if step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
-                <i class="bi bi-check-circle"
-                   style="color:white;"></i>
+                    <!-- Step 2: Confirmed -->
+                    <div class="text-center" style="z-index:1; flex:1;">
+                        <div class="mx-auto rounded-circle d-flex
+                                    align-items-center
+                                    justify-content-center"
+                             style="width:46px; height:46px;
+                                    background:
+                                    {% if order.status == 'CONFIRMED' or order.status == 'PREPARING' or order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}
+                                    var(--teal-accent)
+                                    {% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-check-circle"
+                               style="color:white;"></i>
+                        </div>
+                        <p class="mt-1 mb-0"
+                           style="font-size:0.72rem;
+                                  color:{% if order.status == 'CONFIRMED' or order.status == 'PREPARING' or order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                            Confirmed
+                        </p>
+                    </div>
+
+                    <!-- Step 3: Preparing -->
+                    <div class="text-center" style="z-index:1; flex:1;">
+                        <div class="mx-auto rounded-circle d-flex
+                                    align-items-center
+                                    justify-content-center"
+                             style="width:46px; height:46px;
+                                    background:
+                                    {% if order.status == 'PREPARING' or order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}
+                                    var(--teal-accent)
+                                    {% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-fire"
+                               style="color:white;"></i>
+                        </div>
+                        <p class="mt-1 mb-0"
+                           style="font-size:0.72rem;
+                                  color:{% if order.status == 'PREPARING' or order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                            Preparing
+                        </p>
+                    </div>
+
+                    <!-- Step 4: On the Way -->
+                    <div class="text-center" style="z-index:1; flex:1;">
+                        <div class="mx-auto rounded-circle d-flex
+                                    align-items-center
+                                    justify-content-center"
+                             style="width:46px; height:46px;
+                                    background:
+                                    {% if order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}
+                                    var(--teal-accent)
+                                    {% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-bicycle"
+                               style="color:white;"></i>
+                        </div>
+                        <p class="mt-1 mb-0"
+                           style="font-size:0.72rem;
+                                  color:{% if order.status == 'ON_THE_WAY' or order.status == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                            On the Way
+                        </p>
+                    </div>
+
+                    <!-- Step 5: Delivered -->
+                    <div class="text-center" style="z-index:1; flex:1;">
+                        <div class="mx-auto rounded-circle d-flex
+                                    align-items-center
+                                    justify-content-center"
+                             style="width:46px; height:46px;
+                                    background:
+                                    {% if order.status == 'DELIVERED' %}
+                                    var(--teal-accent)
+                                    {% else %}var(--teal-light){% endif %};">
+                            <i class="bi bi-house-check"
+                               style="color:white;"></i>
+                        </div>
+                        <p class="mt-1 mb-0"
+                           style="font-size:0.72rem;
+                                  color:{% if order.status == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
+                            Delivered
+                        </p>
+                    </div>
+
+                </div>
+                {% endif %}
             </div>
-            <p class="mt-1 mb-0"
-               style="font-size:0.72rem;
-                      color:{% if step == 'CONFIRMED' or step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
-                Confirmed
-            </p>
-        </div>
-
-        <!-- Step 3: Preparing -->
-        <div class="text-center" style="z-index:1; flex:1;">
-            <div class="mx-auto rounded-circle d-flex
-                        align-items-center justify-content-center"
-                 style="width:46px; height:46px;
-                        background:{% if step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
-                <i class="bi bi-fire"
-                   style="color:white;"></i>
-            </div>
-            <p class="mt-1 mb-0"
-               style="font-size:0.72rem;
-                      color:{% if step == 'PREPARING' or step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
-                Preparing
-            </p>
-        </div>
-
-        <!-- Step 4: On the Way -->
-        <div class="text-center" style="z-index:1; flex:1;">
-            <div class="mx-auto rounded-circle d-flex
-                        align-items-center justify-content-center"
-                 style="width:46px; height:46px;
-                        background:{% if step == 'ON_THE_WAY' or step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
-                <i class="bi bi-bicycle"
-                   style="color:white;"></i>
-            </div>
-            <p class="mt-1 mb-0"
-               style="font-size:0.72rem;
-                      color:{% if step == 'ON_THE_WAY' or step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
-                On the Way
-            </p>
-        </div>
-
-        <!-- Step 5: Delivered -->
-        <div class="text-center" style="z-index:1; flex:1;">
-            <div class="mx-auto rounded-circle d-flex
-                        align-items-center justify-content-center"
-                 style="width:46px; height:46px;
-                        background:{% if step == 'DELIVERED' %}var(--teal-accent){% else %}var(--teal-light){% endif %};">
-                <i class="bi bi-house-check"
-                   style="color:white;"></i>
-            </div>
-            <p class="mt-1 mb-0"
-               style="font-size:0.72rem;
-                      color:{% if step == 'DELIVERED' %}#80ffdb{% else %}#a0a0a0{% endif %};">
-                Delivered
-            </p>
-        </div>
-
-        {% endwith %}
-    </div>
-
-    {% if order.status == 'CANCELED' %}
-    <div class="alert alert-danger mt-4 text-center mb-0">
-        ❌ This order was canceled.
-    </div>
-    {% endif %}
-</div>
             <!-- END TRACKER -->
 
             <!-- Order Info -->
@@ -170,17 +203,13 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-
                 <tfoot>
-                    <!-- Food Subtotal -->
                     <tr>
                         <td colspan="3" class="text-end">
                             Food Subtotal
                         </td>
                         <td>৳{{ order.total_price }}</td>
                     </tr>
-
-                    <!-- Delivery Charge -->
                     <tr>
                         <td colspan="3" class="text-end">
                             <i class="bi bi-bicycle"
@@ -189,8 +218,6 @@
                         </td>
                         <td>৳{{ order.delivery_charge }}</td>
                     </tr>
-
-                    <!-- Grand Total = food + delivery -->
                     <tr style="background:#0d1b2a;">
                         <td colspan="3" class="text-end">
                             <strong style="color:#00b4d8;
