@@ -1,2 +1,5 @@
-django>=6.0,<7.0
-gunicorn>=23.0,<24.0
+Django>=4.2
+djangorestframework
+Pillow
+django-cors-headers
+gunicorn
