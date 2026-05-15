@@ -5,8 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Restaurant, MenuItem
-from orders.models import Order
-
+from orders.models import Order, Notification
+from group_order.models import GroupOrder, GroupMemberPayment  # Import these
 
 
 def restaurant_list(request):
@@ -23,7 +23,6 @@ def restaurant_detail(request, pk):
         is_available=True
     )
 
-    # Allergy detection
     user_allergies = []
     if request.user.is_authenticated and request.user.allergies:
         user_allergies = [
@@ -38,10 +37,6 @@ def restaurant_detail(request, pk):
     })
 
 
-
-# OWNER DASHBOARD VIEWS (only restaurant owners)
-
-
 def owner_required(view_func):
     @wraps(view_func)
     @login_required
@@ -50,6 +45,7 @@ def owner_required(view_func):
             messages.error(request, '❌ You are not a restaurant owner!')
             return redirect('home')
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -57,9 +53,40 @@ def owner_required(view_func):
 def owner_dashboard(request):
     restaurant = get_object_or_404(Restaurant, owner=request.user)
     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+
+    # Get all orders
     orders = Order.objects.filter(restaurant=restaurant).order_by('-created_at')
 
-    # Count orders by status
+    # ✅ Calculate payment breakdown for each order
+    for order in orders:
+        try:
+            # Check if this order belongs to a group
+            group = order.group_order
+            payments = GroupMemberPayment.objects.filter(group=group)
+
+            order.is_group_order = True
+
+            # Bkash stats
+            order.bkash_total = sum(p.total_amount for p in payments if p.payment_method == 'BKASH')
+            order.bkash_paid = sum(p.total_amount for p in payments if p.payment_method == 'BKASH' and p.is_paid)
+            order.bkash_remaining = order.bkash_total - order.bkash_paid
+
+            # Nagad stats
+            order.nagad_total = sum(p.total_amount for p in payments if p.payment_method == 'NAGAD')
+            order.nagad_paid = sum(p.total_amount for p in payments if p.payment_method == 'NAGAD' and p.is_paid)
+            order.nagad_remaining = order.nagad_total - order.nagad_paid
+
+            # COD stats
+            order.cod_total = sum(p.total_amount for p in payments if p.payment_method == 'COD')
+
+            # Totals
+            order.total_paid_online = order.bkash_paid + order.nagad_paid
+            order.remaining_online = order.bkash_remaining + order.nagad_remaining
+
+        except GroupOrder.DoesNotExist:
+            # Regular individual order
+            order.is_group_order = False
+
     pending_count = orders.filter(status='PENDING').count()
     preparing_count = orders.filter(status='PREPARING').count()
     delivered_count = orders.filter(status='DELIVERED').count()
@@ -134,7 +161,6 @@ def delete_menu_item(request, item_id):
     restaurant = get_object_or_404(Restaurant, owner=request.user)
     item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
 
-    # Check if item has active orders
     from orders.models import OrderItem
     active_orders = OrderItem.objects.filter(
         menu_item=item,
@@ -166,19 +192,36 @@ def update_order_status(request, order_id):
                  'ON_THE_WAY', 'DELIVERED', 'CANCELED']
 
         if new_status in valid:
+
+            # ✅ BLOCK DELIVERY if online payments are incomplete
+            if new_status == 'DELIVERED':
+                try:
+                    group = order.group_order
+                    # Check if any non-COD payment is unpaid
+                    unpaid_online = GroupMemberPayment.objects.filter(
+                        group=group,
+                        is_paid=False
+                    ).exclude(payment_method='COD').exists()
+
+                    if unpaid_online:
+                        messages.error(
+                            request,
+                            '❌ Cannot mark as Delivered! Some online payments (Bkash/Nagad) are still pending.'
+                        )
+                        return redirect('restaurants:owner_dashboard')
+                except GroupOrder.DoesNotExist:
+                    pass  # Regular order, allow delivery
+
             order.status = new_status
             order.save()
 
-            # Send notification to customer
-            from orders.models import Notification
-
             status_messages = {
-                'PENDING':    '🕐 Your order has been received.',
-                'CONFIRMED':  '✅ Your order has been confirmed by the restaurant!',
-                'PREPARING':  '👨‍🍳 The restaurant is now preparing your order!',
+                'PENDING': '🕐 Your order has been received.',
+                'CONFIRMED': '✅ Your order has been confirmed by the restaurant!',
+                'PREPARING': '👨‍🍳 The restaurant is now preparing your order!',
                 'ON_THE_WAY': '🚴 Your order is on the way!',
-                'DELIVERED':  '🎉 Your order has been delivered. Enjoy your meal!',
-                'CANCELED':   f'❌ Your order #{order.id} from {restaurant.name} has been canceled by the restaurant.',
+                'DELIVERED': '🎉 Your order has been delivered. Enjoy your meal!',
+                'CANCELED': f'❌ Your order #{order.id} from {restaurant.name} has been canceled by the restaurant.',
             }
 
             Notification.objects.create(

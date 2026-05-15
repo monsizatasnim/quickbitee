@@ -3,24 +3,29 @@
 
 {% block content %}
 
-<h2 class="section-title">🔔 Notifications</h2>
+<h2 class="section-title mb-4">
+    🔔 Notifications
+</h2>
 
 {% for notif in notifs %}
-<div class="card mb-2 p-3"
-     style="border-left: 3px solid
-     {% if '❌' in notif.message %}#c0392b
-     {% elif '🎉' in notif.message %}#2a9d8f
-     {% else %}#b87333{% endif %};">
-    <div class="d-flex justify-content-between">
-        <p class="mb-0">{{ notif.message }}</p>
+<div class="card p-3 mb-2"
+     style="border-left:4px solid
+     {% if notif.is_read %}var(--teal-light)
+     {% else %}var(--copper-bright){% endif %};">
+
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            {{ notif.message|safe }}
+        </div>
         <small style="color:#a0a0a0; white-space:nowrap; margin-left:15px;">
             {{ notif.created_at|date:"d M, h:i A" }}
         </small>
     </div>
 </div>
 {% empty %}
-<div class="card p-5 text-center">
-    <p style="color:#a0a0a0;">No notifications yet.</p>
+<div class="text-center p-5" style="color:#a0a0a0;">
+    <i class="bi bi-bell-slash" style="font-size:3rem;"></i>
+    <p class="mt-2">No notifications yet!</p>
 </div>
 {% endfor %}
 

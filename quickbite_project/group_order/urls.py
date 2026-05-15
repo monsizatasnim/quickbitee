@@ -12,4 +12,5 @@ urlpatterns = [
     path('<int:group_id>/pay/', views.group_pay, name='group_pay'),
     path('<int:group_id>/pay/confirm/', views.group_pay_confirm, name='group_pay_confirm'),
     path('<int:group_id>/payment-summary/', views.group_payment_summary, name='group_payment_summary'),
+    path('<int:group_id>/delete/', views.delete_group, name='delete_group'),
 ]

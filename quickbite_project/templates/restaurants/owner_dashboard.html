@@ -3,158 +3,179 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="section-title mb-0">🍽️ {{ restaurant.name }} — Dashboard</h2>
-    <a href="{% url 'restaurants:edit_restaurant' %}" class="btn btn-primary">
-        <i class="bi bi-pencil"></i> Edit Restaurant Info
-    </a>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 style="color:var(--copper-bright);">
+                        🏪 {{ restaurant.name }} Dashboard
+                    </h2>
+                    <p class="text-muted mb-0">{{ restaurant.address }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'restaurants:edit_restaurant' %}" class="btn btn-outline-primary me-2">
+                        ✏️ Edit Restaurant
+                    </a>
+                    <a href="{% url 'restaurants:add_menu_item' %}" class="btn btn-success">
+                        ➕ Add Menu Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Stats Row -->
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <h2 style="color:orange;">{{ pending_count }}</h2>
+        <div class="card p-3 text-center bg-dark text-white border-warning">
+            <h3>{{ pending_count }}</h3>
             <p class="mb-0">Pending Orders</p>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <h2 style="color:deepskyblue;">{{ preparing_count }}</h2>
+        <div class="card p-3 text-center bg-dark text-white border-info">
+            <h3>{{ preparing_count }}</h3>
             <p class="mb-0">Preparing</p>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <h2 style="color:lightgreen;">{{ delivered_count }}</h2>
+        <div class="card p-3 text-center bg-dark text-white border-success">
+            <h3>{{ delivered_count }}</h3>
             <p class="mb-0">Delivered</p>
         </div>
     </div>
 </div>
 
-<!-- Menu Items Section -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 style="color:#00b4d8;">📋 Menu Items</h4>
-    <a href="{% url 'restaurants:add_menu_item' %}" class="btn btn-success btn-sm">
-        <i class="bi bi-plus-circle"></i> Add New Item
-    </a>
-</div>
-
-<div class="table-responsive mb-5">
-    <table class="table table-dark table-bordered">
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Available</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in menu_items %}
-            <tr>
-                <td>
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}"
-                             style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
-                    {% else %}
-                        <span class="text-muted">No image</span>
-                    {% endif %}
-                </td>
-                <td>{{ item.name }}</td>
-                <td>৳{{ item.price }}</td>
-                <td>
-                    {% if item.is_available %}
-                        <span style="color:lightgreen;">✅ Yes</span>
-                    {% else %}
-                        <span style="color:red;">❌ No</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'restaurants:edit_menu_item' item.id %}"
-                       class="btn btn-primary btn-sm">
-                        <i class="bi bi-pencil"></i> Edit
-                    </a>
-                    <a href="{% url 'restaurants:delete_menu_item' item.id %}"
-                       class="btn btn-danger btn-sm"
-                       onclick="return confirm('Delete {{ item.name }}?')">
-                        <i class="bi bi-trash"></i> Delete
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center text-muted">
-                    No menu items yet. Add your first item!
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<!-- Orders Section -->
-<h4 style="color:#00b4d8;" class="mb-3">📦 Incoming Orders</h4>
+<h3 class="section-title mb-3">📦 Incoming Orders</h3>
 
 {% for order in orders %}
-<div class="card mb-3 p-3">
-    <div class="d-flex justify-content-between align-items-start">
-        <div>
-            <h5>Order #{{ order.id }}
-                <small class="text-muted">— {{ order.user.username }}</small>
-            </h5>
-            <p class="mb-1">
-                Status:
-                <span class="status-{{ order.status }}">{{ order.status }}</span>
-            </p>
-            <p class="mb-1">Total: ৳{{ order.total_price }}</p>
-            <p class="mb-1">Payment: {{ order.get_payment_method_display }}</p>
-            <p class="mb-1">Phone: {{ order.customer_phone }}</p>
-            <p class="mb-1">Address: {{ order.customer_address }}</p>
+<div class="card mb-4 p-4" style="border: 1px solid var(--teal-light);">
+    <div class="row">
+        <div class="col-md-8">
+            <h4 class="mb-3">
+                Order #{{ order.id }}
+                <span class="text-muted" style="font-size: 1rem;">— {{ order.user.username }}</span>
+                {% if order.is_group_order %}
+                    <span class="badge bg-info ms-2">Group Order</span>
+                {% endif %}
+            </h4>
 
-            <!-- Order Items -->
-            <ul class="mt-2" style="font-size:0.9rem; color:#aaa;">
+            <p class="mb-1">
+                <strong>Status:</strong>
+                <span class="badge
+                    {% if order.status == 'PENDING' %}bg-warning text-dark
+                    {% elif order.status == 'DELIVERED' %}bg-success
+                    {% elif order.status == 'CANCELED' %}bg-danger
+                    {% else %}bg-primary{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </p>
+
+            <p class="mb-1"><strong>Total:</strong> ৳{{ order.grand_total }}</p>
+
+            <!-- ✅ PAYMENT BREAKDOWN SECTION -->
+            {% if order.is_group_order %}
+            <div class="mt-3 p-3" style="background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 4px solid var(--copper);">
+                <h6 class="mb-2" style="color: var(--copper-bright);">💳 Payment Breakdown:</h6>
+
+                <!-- Bkash -->
+                {% if order.bkash_total > 0 %}
+                <div class="d-flex justify-content-between mb-1">
+                    <span><i class="bi bi-circle-fill text-danger" style="font-size: 0.6rem;"></i> bKash:</span>
+                    <span>
+                        ৳{{ order.bkash_total }}
+                        {% if order.bkash_remaining == 0 %}
+                            <span class="text-success ms-2">✅ Paid</span>
+                        {% else %}
+                            <span class="text-warning ms-2">⏳ ৳{{ order.bkash_remaining }} Pending</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- Nagad -->
+                {% if order.nagad_total > 0 %}
+                <div class="d-flex justify-content-between mb-1">
+                    <span><i class="bi bi-circle-fill text-warning" style="font-size: 0.6rem;"></i> Nagad:</span>
+                    <span>
+                        ৳{{ order.nagad_total }}
+                        {% if order.nagad_remaining == 0 %}
+                            <span class="text-success ms-2">✅ Paid</span>
+                        {% else %}
+                            <span class="text-warning ms-2">⏳ ৳{{ order.nagad_remaining }} Pending</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- COD -->
+                {% if order.cod_total > 0 %}
+                <div class="d-flex justify-content-between mb-1">
+                    <span><i class="bi bi-cash-coin text-success"></i> Cash on Delivery:</span>
+                    <span>৳{{ order.cod_total }} <small class="text-muted">(Pay on delivery)</small></span>
+                </div>
+                {% endif %}
+
+                <hr style="border-color: var(--teal-light);">
+
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Total Order Value:</span>
+                    <span>৳{{ order.grand_total }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-success">
+                    <span>✅ Total Paid Online:</span>
+                    <span>৳{{ order.total_paid_online }}</span>
+                </div>
+                <div class="d-flex justify-content-between {% if order.remaining_online > 0 %}text-danger{% else %}text-success{% endif %}">
+                    <span>⏳ Remaining Online Payment:</span>
+                    <span>৳{{ order.remaining_online }}</span>
+                </div>
+            </div>
+            {% else %}
+            <!-- Regular Order Payment -->
+            <p class="mb-1"><strong>Payment:</strong> {{ order.get_payment_method_display }}</p>
+            <p class="mb-1"><strong>Paid:</strong> {% if order.is_paid %}✅ Yes{% else %}❌ No{% endif %}</p>
+            {% endif %}
+            <!-- END PAYMENT BREAKDOWN -->
+
+            <p class="mb-1"><strong>Phone:</strong> {{ order.customer_phone }}</p>
+            <p class="mb-3"><strong>Address:</strong> {{ order.customer_address }}</p>
+
+            <ul class="list-unstyled">
                 {% for item in order.items.all %}
-                <li>{{ item.menu_item.name }} x{{ item.quantity }} — ৳{{ item.get_subtotal }}</li>
+                <li>
+                    • {{ item.menu_item.name }} x{{ item.quantity }} — ৳{{ item.get_subtotal }}
+                </li>
                 {% endfor %}
             </ul>
         </div>
 
-        <!-- Update Status -->
-        <form method="post"
-              action="{% url 'restaurants:update_order_status' order.id %}">
-            {% csrf_token %}
-            <select name="status" class="form-select form-select-sm mb-2"
-                    style="background:var(--teal-dark); color:var(--grey-white); border-color:var(--teal-light);">
-                <option value="PENDING"
-                        {% if order.status == 'PENDING' %}selected{% endif %}> 📋 Order Placed
-                </option>
-                <option value="CONFIRMED"
-                        {% if order.status == 'CONFIRMED' %}selected{% endif %}> ✅ Confirmed
-                </option>
-                <option value="PREPARING"
-                        {% if order.status == 'PREPARING' %}selected{% endif %}> 👨‍🍳 Preparing
-                </option>
-                <option value="ON_THE_WAY"
-                        {% if order.status == 'ON_THE_WAY' %}selected{% endif %}> 🚴 On the Way
-                </option>
-                <option value="DELIVERED"
-                        {% if order.status == 'DELIVERED' %}selected{% endif %}> 🎉 Delivered
-                </option>
-                <option value="CANCELED"
-                        {% if order.status == 'CANCELED' %}selected{% endif %}>
-                ❌ Cancel Order
-                </option>
-            </select>
-            <button type="submit" class="btn btn-success btn-sm w-100">
-                Update
-            </button>
-        </form>
+        <div class="col-md-4 text-end">
+            <div class="card p-3 mb-3 bg-dark">
+                <small class="text-muted">Current Status</small>
+                <h5 class="mb-0">{{ order.get_status_display }}</h5>
+            </div>
+
+            <form method="post" action="{% url 'restaurants:update_order_status' order.id %}">
+                {% csrf_token %}
+                <select name="status" class="form-select mb-2">
+                    <option value="PENDING" {% if order.status == 'PENDING' %}selected{% endif %}>Order Placed</option>
+                    <option value="CONFIRMED" {% if order.status == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                    <option value="PREPARING" {% if order.status == 'PREPARING' %}selected{% endif %}>Preparing</option>
+                    <option value="ON_THE_WAY" {% if order.status == 'ON_THE_WAY' %}selected{% endif %}>On the Way</option>
+                    <option value="DELIVERED" {% if order.status == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                    <option value="CANCELED" {% if order.status == 'CANCELED' %}selected{% endif %}>Canceled</option>
+                </select>
+                <button type="submit" class="btn btn-primary w-100">
+                    Update Status
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 {% empty %}
-<p class="text-muted">No orders yet.</p>
+<div class="alert alert-info">No orders yet.</div>
 {% endfor %}
 
 {% endblock %}
